@@ -1,0 +1,4 @@
+node_modules/
+.vercel/
+*.sqlite-journal
+.DS_Store

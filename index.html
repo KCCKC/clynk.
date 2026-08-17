@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blynk Alter | Next-Gen AI IoT Telemetry & Control Platform</title>
+  <meta name="description" content="Modern AI-powered alternative to Blynk for ESP32, Arduino, and IoT devices with Web Serial COM port reading, Virtual Pins, and automated telemetry analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js for reliable offline and cloud graphing -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Blynk<span class="highlight">Alter</span></span>
+          <span class="brand-tag">AI IoT Platform</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-tab="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          Dashboard
+        </button>
+        <button class="nav-tab" data-tab="webserial">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v6m0 6v6M3 12h6m6 0h6"></path></svg>
+          Web Serial (USB)
+          <span class="badge" id="serialStatusBadge">Ready</span>
+        </button>
+        <button class="nav-tab" data-tab="simulator">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          Virtual Hardware Bench
+        </button>
+        <button class="nav-tab" data-tab="ai-copilot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V18a1 1 0 0 1-2 0v-1.07A7 7 0 0 1 5.07 11H6a1 1 0 0 1 0-2h-.93A7 7 0 0 1 11 5.07V6a1 1 0 0 1 2 0v-.93A7 7 0 0 1 18.93 11H18a1 1 0 0 1 0 2h.93A7 7 0 0 1 13 16.93z"></path></svg>
+          AI IoT Copilot
+        </button>
+        <button class="nav-tab" data-tab="notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          Alerts & Webhooks
+        </button>
+        <button class="nav-tab" data-tab="firmware">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          C++ Firmware Studio
+        </button>
+        <button class="nav-tab" data-tab="api-console">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6"></path><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          REST API Docs
+        </button>
+      </nav>
+
+      <!-- Quick Actions / Status -->
+      <div class="nav-actions">
+        <div class="device-pill">
+          <span class="status-dot live" id="cloudStatusDot"></span>
+          <span class="device-label" id="deviceStatusText">Online (ESP32)</span>
+        </div>
+        <button class="btn btn-sm btn-outline" id="btnExportConfig" title="Export Dashboard Layout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export
+        </button>
+        <button class="btn btn-sm btn-primary" id="btnAddWidget">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Widget
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+      
+      <!-- ================= 1. DASHBOARD VIEW ================= -->
+      <section class="tab-content active" id="view-dashboard">
+        <!-- Live Telemetry Banner -->
+        <div class="dashboard-header-bar">
+          <div class="telemetry-summary">
+            <div class="stat-item">
+              <span class="stat-label">ACTIVE DEVICE</span>
+              <span class="stat-val" id="statDeviceName">ESP32 Weather & Relay</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">AUTH TOKEN</span>
+              <span class="stat-val font-mono" id="statAuthToken">demo_token</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">LAST PING</span>
+              <span class="stat-val" id="statLastPing">Just now</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">STREAM MODE</span>
+              <span class="badge badge-green" id="streamModeBadge">SSE / REST Sync</span>
+            </div>
+          </div>
+          <div class="header-controls">
+            <button class="btn btn-sm btn-secondary" id="btnSimulateStream">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span id="simBtnLabel">Live Test Stream</span>
+            </button>
+            <button class="btn btn-sm btn-outline" id="btnResetWidgets">Reset Layout</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Widget Grid -->
+        <div class="widget-grid" id="widgetGrid">
+          <!-- Dynamically populated widgets (Gauges, Charts, Relays, Sliders, RGB, LCD) -->
+        </div>
+      </section>
+
+      <!-- ================= 2. WEB SERIAL (USB COM PORT) VIEW ================= -->
+      <section class="tab-content" id="view-webserial">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>Direct USB COM Port Studio</h2>
+            <p>Connect your Arduino, ESP32, or Raspberry Pi directly to your browser via USB. Works 100% in Chrome/Edge on GitHub Pages, Vercel, and Localhost with zero server setup.</p>
+          </div>
+          <div class="serial-connect-bar">
+            <div class="field-group">
+              <label for="serialBaudSelect">Baud Rate</label>
+              <select id="serialBaudSelect" class="form-select">
+                <option value="115200" selected>115200 (ESP32 / Fast)</option>
+                <option value="9600">9600 (Arduino Default)</option>
+                <option value="57600">57600</option>
+                <option value="38400">38400</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="serialParserMode">Parser Mode</label>
+              <select id="serialParserMode" class="form-select">
+                <option value="blynk_alter" selected>Blynk Format (V0:24.5)</option>
+                <option value="json">JSON ({"V0":24.5})</option>
+                <option value="csv">CSV (24.5, 60.2)</option>
+                <option value="raw">Raw Stream</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="btnConnectSerial">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v6m0 6v6M3 12h6m6 0h6"></path></svg>
+              Connect USB Port
+            </button>
+            <button class="btn btn-danger hidden" id="btnDisconnectSerial">Disconnect</button>
+          </div>
+        </div>
+
+        <div class="serial-studio-grid">
+          <!-- Terminal & Monitor -->
+          <div class="card terminal-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                Live Serial Monitor & Packet Stream
+              </div>
+              <div class="card-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="serialAutoScroll" checked> Auto-Scroll
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="serialSyncDashboard" checked> Sync with Dashboard
+                </label>
+                <button class="btn btn-xs btn-outline" id="btnClearTerminal">Clear</button>
+              </div>
+            </div>
+            <div class="terminal-body" id="serialLogContainer">
+              <div class="log-line sys">[SYSTEM] Web Serial Engine initialized. Click 'Connect USB Port' to attach Arduino or ESP32.</div>
+            </div>
+            <div class="terminal-input-bar">
+              <input type="text" id="serialInputTx" class="form-input font-mono" placeholder="Type command to send to device (e.g. V2=1 or V3=180)..." />
+              <button class="btn btn-primary" id="btnSendSerial">Send TX</button>
+            </div>
+          </div>
+
+          <!-- Port Status & Metrics -->
+          <div class="card serial-stats-card">
+            <div class="card-header">
+              <div class="card-title">Port Telemetry & Diagnostics</div>
+            </div>
+            <div class="card-body">
+              <div class="metric-row">
+                <span class="m-label">Port Connection:</span>
+                <span class="m-val" id="portStateVal">Disconnected</span>
+              </div>
+              <div class="metric-row">
+                <span class="m-label">Total RX Bytes:</span>
+                <span class="m-val font-mono" id="portRxBytes">0 B</span>
+              </div>
+              <div class="metric-row">
+                <span class="m-label">Total TX Bytes:</span>
+                <span class="m-val font-mono" id="portTxBytes">0 B</span>
+              </div>
+              <div class="metric-row">
+                <span class="m-label">Parsed Virtual Pins:</span>
+                <span class="m-val font-mono" id="portParsedPins">None</span>
+              </div>
+
+              <hr class="divider">
+              <h4>Quick Transmit Commands</h4>
+              <div class="quick-commands-grid">
+                <button class="btn btn-xs btn-outline cmd-chip" data-cmd="V2=1">Relay ON (V2=1)</button>
+                <button class="btn btn-xs btn-outline cmd-chip" data-cmd="V2=0">Relay OFF (V2=0)</button>
+                <button class="btn btn-xs btn-outline cmd-chip" data-cmd="V3=255">PWM 100% (V3=255)</button>
+                <button class="btn btn-xs btn-outline cmd-chip" data-cmd="V3=128">PWM 50% (V3=128)</button>
+                <button class="btn btn-xs btn-outline cmd-chip" data-cmd="PING">Ping Device</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. VIRTUAL HARDWARE SIMULATOR VIEW ================= -->
+      <section class="tab-content" id="view-simulator">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>ESP32 / Arduino Virtual Test Bench</h2>
+            <p>Don't have hardware plugged in right now? Use this interactive hardware simulator to test sensor sliders, dials, relays, and RGB LEDs. All simulator actions feed directly into the dashboard and AI engine!</p>
+          </div>
+          <div class="sim-toggle-action">
+            <button class="btn btn-primary" id="btnBenchAutoLoop">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+              <span id="autoBenchLabel">Start Auto-Sensor Waves</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sim-bench-grid">
+          <!-- Interactive Microcontroller Board Graphic & Pins -->
+          <div class="card board-mockup-card">
+            <div class="board-pcb">
+              <div class="board-chip">
+                <div class="chip-label">ESP32-WROOM-32</div>
+                <div class="chip-sub">Wi-Fi + BLE MCU</div>
+              </div>
+              <div class="board-indicators">
+                <div class="indicator-item">
+                  <span class="led-dot led-blue active" id="simPcbPwr"></span>
+                  <span>PWR</span>
+                </div>
+                <div class="indicator-item">
+                  <span class="led-dot led-red" id="simPcbTx"></span>
+                  <span>TX</span>
+                </div>
+                <div class="indicator-item">
+                  <span class="led-dot led-green" id="simPcbRx"></span>
+                  <span>RX</span>
+                </div>
+                <div class="indicator-item">
+                  <span class="led-dot led-amber" id="simPcbRelayLed"></span>
+                  <span>RELAY (V2)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-controls-section">
+              <h3>Interactive Hardware Components</h3>
+              
+              <!-- Sensor 1: DHT22 Temp & Humidity -->
+              <div class="sim-component-box">
+                <div class="comp-header">
+                  <span class="comp-title">🌡️ DHT22 Sensor (GPIO 4 -> V0, V1)</span>
+                  <span class="comp-badge">Input</span>
+                </div>
+                <div class="slider-row">
+                  <label>Temperature (<span id="simTempDisplay">25.4</span>°C)</label>
+                  <input type="range" id="simTempSlider" min="-10" max="60" step="0.5" value="25.4" class="range-slider">
+                </div>
+                <div class="slider-row">
+                  <label>Humidity (<span id="simHumDisplay">58.0</span>%)</label>
+                  <input type="range" id="simHumSlider" min="0" max="100" step="1" value="58" class="range-slider">
+                </div>
+              </div>
+
+              <!-- Sensor 2: Potentiometer / Analog In -->
+              <div class="sim-component-box">
+                <div class="comp-header">
+                  <span class="comp-title">🎛️ Analog Potentiometer (A0 / ADC -> V4 Battery Voltage)</span>
+                  <span class="comp-badge">Input</span>
+                </div>
+                <div class="slider-row">
+                  <label>Voltage (<span id="simVoltDisplay">3.82</span> V)</label>
+                  <input type="range" id="simVoltSlider" min="2.8" max="4.2" step="0.05" value="3.82" class="range-slider">
+                </div>
+              </div>
+
+              <!-- Actuator 1: 2-Channel Relay Board -->
+              <div class="sim-component-box">
+                <div class="comp-header">
+                  <span class="comp-title">⚡ 5V Optocoupler Relay (GPIO 18 -> V2)</span>
+                  <span class="comp-badge">Output</span>
+                </div>
+                <div class="relay-switch-container">
+                  <div class="relay-status-display" id="simRelayStateBadge">OFF (NC Contact)</div>
+                  <button class="btn btn-outline" id="simBtnRelayToggle">Toggle Relay</button>
+                </div>
+              </div>
+
+              <!-- Actuator 2: PWM LED Dimmer -->
+              <div class="sim-component-box">
+                <div class="comp-header">
+                  <span class="comp-title">💡 PWM High-Power LED (GPIO 23 -> V3)</span>
+                  <span class="comp-badge">Output</span>
+                </div>
+                <div class="slider-row">
+                  <label>Duty Cycle (<span id="simPwmDisplay">128</span> / 255 - <span id="simPwmPct">50</span>%)</label>
+                  <input type="range" id="simPwmSlider" min="0" max="255" step="1" value="128" class="range-slider">
+                </div>
+                <div class="sim-led-glow-preview" id="simLedGlow"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. AI IOT COPILOT VIEW ================= -->
+      <section class="tab-content" id="view-ai-copilot">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>AI IoT Copilot & Telemetry Brain</h2>
+            <p>Ask questions in plain English to dynamically plot charts, inspect sensor anomalies, trigger pin actions, or architect hardware automations.</p>
+          </div>
+        </div>
+
+        <div class="ai-studio-grid">
+          <!-- AI Chat & Command Area -->
+          <div class="card ai-chat-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                IoT Intelligence Dialogue
+              </div>
+              <div class="card-actions">
+                <span class="badge badge-purple">Gemini / Rule Engine</span>
+              </div>
+            </div>
+
+            <div class="ai-messages-container" id="aiMessagesContainer">
+              <div class="ai-msg bot">
+                <div class="avatar">AI</div>
+                <div class="msg-bubble">
+                  <p>Hello! I am your <strong>IoT Telemetry Copilot</strong>. I'm connected to your device datastreams (Pins <code>V0</code> to <code>V31</code>). Here are some things you can ask me:</p>
+                  <div class="prompt-chips">
+                    <button class="chip" data-prompt="Show temperature vs humidity over the last 12 hours">📈 Plot Temp vs Humidity</button>
+                    <button class="chip" data-prompt="Analyze battery discharge rate and health">🔋 Battery & Voltage Analysis</button>
+                    <button class="chip" data-prompt="Turn on the relay on V2 and set PWM brightness to 80%">⚡ Turn on Relay & Dim LED</button>
+                    <button class="chip" data-prompt="Are there any temperature anomalies or spikes in the logs?">⚠️ Detect Sensor Anomalies</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic AI Chart Render Target -->
+            <div class="ai-chart-surface hidden" id="aiChartSurface">
+              <div class="ai-chart-header">
+                <div>
+                  <h4 id="aiChartTitle">Sensor Telemetry Trend</h4>
+                  <p class="chart-desc" id="aiChartDesc">Generated dynamically by AI</p>
+                </div>
+                <button class="btn btn-xs btn-outline" id="btnCloseAiChart">Close</button>
+              </div>
+              <div class="ai-canvas-wrapper">
+                <canvas id="aiDynamicCanvas"></canvas>
+              </div>
+              <div class="ai-insight-box" id="aiInsightBox">
+                <span class="insight-icon">💡</span>
+                <span class="insight-text" id="aiInsightText">Loading insight...</span>
+              </div>
+            </div>
+
+            <!-- Categorized Prompt Library for Testing -->
+            <div class="prompt-library-drawer">
+              <div class="drawer-header">
+                <span>📚 1-Click Test Prompts Library</span>
+                <span class="drawer-sub">Click any prompt to test the AI engine instantly</span>
+              </div>
+              <div class="prompt-category-tabs">
+                <button class="prompt-cat-btn active" data-cat="telemetry">📊 Telemetry & Charts</button>
+                <button class="prompt-cat-btn" data-cat="control">⚡ Pin Control & Automations</button>
+                <button class="prompt-cat-btn" data-cat="diagnostics">🔍 Diagnostics & Anomalies</button>
+                <button class="prompt-cat-btn" data-cat="firmware">🛠️ C++ Firmware</button>
+              </div>
+              <div class="prompt-chips-grid" id="promptChipsGrid">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <div class="ai-input-bar">
+              <input type="text" id="aiPromptInput" class="form-input" placeholder="Type prompt (e.g. 'Show me temperature vs battery voltage' or 'Turn on relay')..." />
+              <button class="btn btn-primary" id="btnSendAiPrompt">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Ask Copilot
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. NOTIFICATIONS & WEBHOOKS VIEW ================= -->
+      <section class="tab-content" id="view-notifications">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>Zero-Friction Alert & Notification Hub</h2>
+            <p>Get instant alerts when your sensors detect anomalies (e.g. Temperature > 35°C or Relay Triggered). <strong>No complex Meta/WhatsApp business verification or credit card required!</strong></p>
+          </div>
+          <button class="btn btn-primary" id="btnTestAllAlerts">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            Send Test Alert
+          </button>
+        </div>
+
+        <div class="notif-channels-grid">
+          <!-- Channel 1: Telegram Bot API (Recommended #1) -->
+          <div class="card notif-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="channel-icon">✈️</span>
+                Telegram Bot Alerts (100% Free & Fast)
+              </div>
+              <span class="badge badge-green">Recommended</span>
+            </div>
+            <div class="card-body">
+              <p class="channel-desc">Takes 30 seconds to set up with <code>@BotFather</code>. No phone number binding, no business verification, no templates.</p>
+              <div class="form-group">
+                <label>Telegram Bot Token</label>
+                <input type="text" id="cfgTelegramToken" class="form-input font-mono" placeholder="123456789:ABCdefGhIJKlmNoPQRstuVWXyz" />
+              </div>
+              <div class="form-group">
+                <label>Your Telegram Chat ID</label>
+                <input type="text" id="cfgTelegramChatId" class="form-input font-mono" placeholder="123456789 (Get from @userinfobot)" />
+              </div>
+              <div class="channel-actions">
+                <button class="btn btn-sm btn-outline" id="btnTestTelegram">Test Telegram Alert</button>
+                <span class="channel-status" id="stTelegram"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Channel 2: Discord Webhook (Recommended #2) -->
+          <div class="card notif-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="channel-icon">🎮</span>
+                Discord Server Webhook
+              </div>
+              <span class="badge badge-purple">Instant Setup</span>
+            </div>
+            <div class="card-body">
+              <p class="channel-desc">Create a free Discord server or channel, go to Channel Settings &rarr; Integrations &rarr; Webhooks, and paste the URL here.</p>
+              <div class="form-group">
+                <label>Discord Webhook URL</label>
+                <input type="text" id="cfgDiscordWebhook" class="form-input font-mono" placeholder="https://discord.com/api/webhooks/..." />
+              </div>
+              <div class="channel-actions">
+                <button class="btn btn-sm btn-outline" id="btnTestDiscord">Test Discord Alert</button>
+                <span class="channel-status" id="stDiscord"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Channel 3: Ntfy.sh (Free Open Source Phone Push) -->
+          <div class="card notif-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="channel-icon">📲</span>
+                Ntfy.sh (Phone Push Without Account)
+              </div>
+              <span class="badge badge-green">No Sign-up</span>
+            </div>
+            <div class="card-body">
+              <p class="channel-desc">Download free <strong>ntfy app</strong> on iOS or Android, subscribe to your unique topic name, and receive instant push notifications!</p>
+              <div class="form-group">
+                <label>Your Ntfy Topic Name</label>
+                <input type="text" id="cfgNtfyTopic" class="form-input font-mono" value="my_esp32_alerts_test" />
+              </div>
+              <div class="channel-actions">
+                <button class="btn btn-sm btn-outline" id="btnTestNtfy">Test Ntfy Push</button>
+                <span class="channel-status" id="stNtfy"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Channel 4: Native Browser Notifications -->
+          <div class="card notif-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="channel-icon">🔔</span>
+                Native Desktop & Mobile Browser Push
+              </div>
+              <span class="badge badge-green">Built-in</span>
+            </div>
+            <div class="card-body">
+              <p class="channel-desc">Uses standard HTML5 Notifications API. Works on Windows, Mac, Linux, and Android Chrome even when dashboard is running in background.</p>
+              <div class="channel-actions" style="margin-top: 1rem;">
+                <button class="btn btn-sm btn-primary" id="btnEnableBrowserNotif">Enable Browser Notifications</button>
+                <span class="channel-status" id="stBrowserNotif"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. C++ FIRMWARE STUDIO VIEW ================= -->
+      <section class="tab-content" id="view-firmware">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>C++ Arduino & ESP32 Firmware Generator</h2>
+            <p>Generate clean, production-grade Arduino IDE sketches configured with your Auth Token, Wi-Fi credentials, and Virtual Pin callbacks in 1-click.</p>
+          </div>
+        </div>
+
+        <div class="firmware-studio-grid">
+          <!-- Configuration Options -->
+          <div class="card config-card">
+            <div class="card-header">
+              <div class="card-title">Device & Network Settings</div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Target Board</label>
+                <select id="fwBoardSelect" class="form-select">
+                  <option value="esp32" selected>ESP32 Dev Module (WiFi HTTP/REST)</option>
+                  <option value="arduino_serial">Arduino Uno / Nano (USB Web Serial)</option>
+                  <option value="esp8266">ESP8266 NodeMCU / WeMos D1</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Server Base URL</label>
+                <input type="text" id="fwServerUrl" class="form-input font-mono" value="http://192.168.1.100:3000" />
+                <small class="help-text">Use your PC's LAN IP for local WiFi, or your Vercel URL (e.g. https://your-app.vercel.app)</small>
+              </div>
+              <div class="form-group">
+                <label>Auth Token</label>
+                <input type="text" id="fwAuthToken" class="form-input font-mono" value="demo_token" />
+              </div>
+              <div class="form-group">
+                <label>WiFi SSID</label>
+                <input type="text" id="fwSsid" class="form-input" value="MyHomeWiFi" />
+              </div>
+              <div class="form-group">
+                <label>WiFi Password</label>
+                <input type="password" id="fwPass" class="form-input" value="SecretPassword123" />
+              </div>
+              <button class="btn btn-primary full-width" id="btnRegenSketch">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Generate C++ Sketch
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Display & Export -->
+          <div class="card code-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                Generated Sketch (<span id="fwFileNameLabel">esp32_wifi_blynk.ino</span>)
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-sm btn-outline" id="btnCopyCode">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  Copy Sketch
+                </button>
+                <button class="btn btn-sm btn-primary" id="btnDownloadIno">Download .INO</button>
+              </div>
+            </div>
+            <div class="card-body no-pad">
+              <pre class="code-preview"><code id="codeBlock">// Generating sketch...</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. REST API DOCS & CONSOLE ================= -->
+      <section class="tab-content" id="view-api-console">
+        <div class="panel-hero">
+          <div class="hero-text">
+            <h2>Blynk-Compatible REST API Reference</h2>
+            <p>Use standard HTTP GET/POST requests from curl, Python, ESP32, or webhooks. Drop-in compatible with existing Blynk endpoints.</p>
+          </div>
+        </div>
+
+        <div class="api-docs-grid">
+          <!-- Endpoint 1: Update Pin -->
+          <div class="card endpoint-card">
+            <div class="ep-header">
+              <span class="http-badge get">GET</span>
+              <span class="http-badge post">POST</span>
+              <code class="ep-path">/api/blynk/update</code>
+            </div>
+            <div class="ep-body">
+              <p>Updates one or more virtual or physical pins in real-time.</p>
+              <h5>Example URL:</h5>
+              <pre class="code-snippet font-mono">http://localhost:3000/api/blynk/update?token=demo_token&pin=V0&value=25.4</pre>
+              <h5>Multi-Pin Batch URL:</h5>
+              <pre class="code-snippet font-mono">http://localhost:3000/api/blynk/update?token=demo_token&V0=25.4&V1=58.2&V2=1</pre>
+              <div class="ep-test-row">
+                <button class="btn btn-sm btn-outline test-ep-btn" data-url="/api/blynk/update?token=demo_token&pin=V0&value=28.5">Test Endpoint</button>
+                <span class="test-res font-mono" id="resEpUpdate"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endpoint 2: Get Pin -->
+          <div class="card endpoint-card">
+            <div class="ep-header">
+              <span class="http-badge get">GET</span>
+              <code class="ep-path">/api/blynk/get</code>
+            </div>
+            <div class="ep-body">
+              <p>Retrieves the current state of a specified pin.</p>
+              <h5>Example URL:</h5>
+              <pre class="code-snippet font-mono">http://localhost:3000/api/blynk/get?token=demo_token&pin=V0</pre>
+              <div class="ep-test-row">
+                <button class="btn btn-sm btn-outline test-ep-btn" data-url="/api/blynk/get?token=demo_token&pin=V0">Test Endpoint</button>
+                <span class="test-res font-mono" id="resEpGet"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endpoint 3: History -->
+          <div class="card endpoint-card">
+            <div class="ep-header">
+              <span class="http-badge get">GET</span>
+              <code class="ep-path">/api/blynk/history</code>
+            </div>
+            <div class="ep-body">
+              <p>Fetches timestamped historical telemetry datastreams for charts and analytics.</p>
+              <h5>Example URL:</h5>
+              <pre class="code-snippet font-mono">http://localhost:3000/api/blynk/history?token=demo_token&pin=V0&limit=50</pre>
+              <div class="ep-test-row">
+                <button class="btn btn-sm btn-outline test-ep-btn" data-url="/api/blynk/history?token=demo_token&pin=V0&limit=10">Test Endpoint</button>
+                <span class="test-res font-mono" id="resEpHist"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal: Add / Edit Widget -->
+    <div class="modal-overlay hidden" id="widgetModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add / Edit Dashboard Widget</h3>
+          <button class="modal-close" id="btnCloseModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Widget Type</label>
+              <select id="wTypeSelect" class="form-select">
+                <option value="gauge">Radial Gauge / Meter</option>
+                <option value="chart">Live Telemetry Multi-Chart</option>
+                <option value="switch">Relay Toggle Switch</option>
+                <option value="slider">PWM / Slider Control</option>
+                <option value="rgb">RGB Color Picker (NeoPixel)</option>
+                <option value="lcd">16x2 LCD Character Matrix</option>
+                <option value="value">Metric Display Card</option>
+                <option value="led">LED Status Indicator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Layout Size</label>
+              <select id="wSizeSelect" class="form-select">
+                <option value="1" selected>1x1 Compact</option>
+                <option value="2">2x1 Wide</option>
+                <option value="3">3x1 Full Width</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Widget Title</label>
+            <input type="text" id="wTitleInput" class="form-input" value="Temperature Gauge" />
+          </div>
+          <div class="form-group">
+            <label>Virtual / Hardware Pin</label>
+            <select id="wPinSelect" class="form-select font-mono">
+              <option value="V0">V0 - Virtual Pin 0 (Temperature)</option>
+              <option value="V1">V1 - Virtual Pin 1 (Humidity)</option>
+              <option value="V2">V2 - Virtual Pin 2 (Relay 1)</option>
+              <option value="V3">V3 - Virtual Pin 3 (PWM Dimmer)</option>
+              <option value="V4">V4 - Virtual Pin 4 (Battery ADC)</option>
+              <option value="V5">V5 - Virtual Pin 5 (RGB NeoPixel)</option>
+              <option value="V6">V6 - Virtual Pin 6 (Pressure)</option>
+              <option value="V7">V7 - Virtual Pin 7</option>
+              <option value="V8">V8 - Virtual Pin 8</option>
+              <option value="A0">A0 - Analog Pin 0</option>
+              <option value="A1">A1 - Analog Pin 1</option>
+              <option value="D2">D2 - Digital Pin 2</option>
+              <option value="D4">D4 - Digital Pin 4</option>
+              <option value="D18">D18 - GPIO 18</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Min Value</label>
+              <input type="number" id="wMinInput" class="form-input" value="0" />
+            </div>
+            <div class="form-group">
+              <label>Max Value</label>
+              <input type="number" id="wMaxInput" class="form-input" value="100" />
+            </div>
+            <div class="form-group">
+              <label>Unit</label>
+              <input type="text" id="wUnitInput" class="form-input" value="°C" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>High Alarm Threshold (Triggers Alert)</label>
+              <input type="number" id="wAlarmInput" class="form-input" placeholder="e.g. 35 (Leaves empty for none)" />
+            </div>
+            <div class="form-group">
+              <label>Accent Color</label>
+              <select id="wColorSelect" class="form-select">
+                <option value="#06B6D4">Cyan</option>
+                <option value="#10B981">Emerald Green</option>
+                <option value="#F59E0B">Amber Orange</option>
+                <option value="#8B5CF6">Purple / Violet</option>
+                <option value="#EC4899">Pink / Rose</option>
+                <option value="#3B82F6">Royal Blue</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btnCancelWidget">Cancel</button>
+          <button class="btn btn-primary" id="btnSaveWidget">Save Widget</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
