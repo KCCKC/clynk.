@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/blynk/update",
+      "destination": "/api/blynk/update.js"
+    },
+    {
+      "source": "/api/blynk/get",
+      "destination": "/api/blynk/get.js"
+    },
+    {
+      "source": "/api/blynk/history",
+      "destination": "/api/blynk/history.js"
+    },
+    {
+      "source": "/api/ai/query",
+      "destination": "/api/ai/query.js"
+    }
+  ]
+}

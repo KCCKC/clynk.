@@ -1,0 +1,22 @@
+{
+  "name": "blynk-alter",
+  "version": "1.0.0",
+  "description": "Next-Gen AI IoT Telemetry & Control Platform (Blynk Alternative)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "iot",
+    "blynk",
+    "arduino",
+    "esp32",
+    "web-serial",
+    "telemetry",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT"
+}
