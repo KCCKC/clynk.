@@ -8,7 +8,11 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 
 const store = new Map([
-  ['V0', '24.8'], ['V1', '58.5'], ['V2', '0'], ['V3', '128'], ['V4', '3.82']
+  ['V0', '24.8'],
+  ['V1', '58.5'],
+  ['V2', '0'],
+  ['V3', '128'],
+  ['V4', '3.82']
 ]);
 
 function getHtml() {
@@ -53,6 +57,7 @@ const server = http.createServer((req, res) => {
     return res.end(String(val));
   }
 
+  // Default: Serve complete HTML
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.statusCode = 200;
   return res.end(getHtml());
