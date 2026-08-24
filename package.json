@@ -1,8 +1,9 @@
 {
-  "name": "clynk-esp32-iot-dashboard",
+  "name": "clynk",
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "api/index.js",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2"
