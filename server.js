@@ -7,16 +7,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- In-Memory Virtual Pin Store (V0 to V15) ---
+// --- In-Memory Datastream Store (V0 to V15) ---
 const pinStore = new Map([
-  ['V0', '24.8'], // Temperature (°C)
-  ['V1', '58.5'], // Humidity (%)
-  ['V2', '0'],    // Relay 1 (0 or 1)
-  ['V3', '128'],  // Light / PWM (0-255)
-  ['V4', '3.82'], // Battery / Supply Voltage (V)
+  ['V0', '28.3'], // Temperature (°C)
+  ['V1', '89.0'], // Humidity (%)
+  ['V2', '0'],    // Alarm (0 or 1)
+  ['V3', '1'],    // Water Pump (0 or 1)
+  ['V4', '3.82'], // ESP32 Voltage (V)
   ['V5', '0'],    // Lighting Actuator (0 or 1)
-  ['V6', '0'],
-  ['V7', '0'],
+  ['V6', '46.0'], // Soil Moisture (%)
+  ['V7', '340'],  // Solar Lux (lux)
   ['V8', '0'],
   ['V9', '0'],
   ['V10', '0'],
@@ -27,18 +27,42 @@ const pinStore = new Map([
   ['V15', '0']
 ]);
 
-// --- Embedded Clynk Modern ESP32 Streaming Dashboard HTML ---
+// In-memory historical buffer for time-series charts
+const historyLogs = {
+  V0: [],
+  V1: [],
+  V2: [],
+  V3: [],
+  V6: [],
+  V7: []
+};
+
+// Seed initial history
+const nowTs = Date.now();
+for (let i = 20; i >= 0; i--) {
+  const t = new Date(nowTs - i * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  historyLogs.V0.push({ time: t, val: 27.5 + (Math.sin(i * 0.4) * 1.5) });
+  historyLogs.V1.push({ time: t, val: 86.0 + (Math.cos(i * 0.3) * 4.0) });
+  historyLogs.V2.push({ time: t, val: 0 });
+  historyLogs.V3.push({ time: t, val: 1 });
+  historyLogs.V6.push({ time: t, val: 45.0 + (Math.sin(i * 0.2) * 2.0) });
+  historyLogs.V7.push({ time: t, val: 320 + Math.floor(Math.sin(i * 0.5) * 50) });
+}
+
+// --- Embedded Authentic Blynk 2.0 Console HTML ---
 const DASHBOARD_HTML = `<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clynk • ESP32 Real-Time IoT Stream Dashboard</title>
+  <title>Blynk.Console • IoT Farming System</title>
   
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -50,16 +74,17 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            brand: {
-              400: '#34d399',
-              500: '#10b981',
-              600: '#059669',
-            },
-            dark: {
-              950: '#06080e',
-              900: '#0b0f19',
-              850: '#111726',
-              800: '#172033',
+            blynk: {
+              DEFAULT: '#00c282',
+              50: '#e6faf2',
+              100: '#cbf5e4',
+              400: '#33d39f',
+              500: '#00c282',
+              600: '#00a36d',
+              700: '#008559',
+              dark: '#111827',
+              gray: '#f3f4f6',
+              border: '#e5e7eb',
             }
           }
         }
@@ -67,501 +92,621 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
     }
   </script>
   
+  <!-- Chart.js, MQTT.js, Lucide Icons -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-gauges@2.1.7/gauge.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     body {
-      background-color: #06080e;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .dark body {
+      background-color: #0b0f19;
       color: #e2e8f0;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
-      background-attachment: fixed;
     }
-    .glass-panel {
-      background: rgba(17, 23, 38, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    .blynk-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
     }
-    .glass-panel:hover {
-      border-color: rgba(16, 185, 129, 0.25);
+    .dark .blynk-card {
+      background: #111827;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+    .blynk-card:hover {
+      border-color: #cbd5e1;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(11, 15, 25, 0.6);
+    .dark .blynk-card:hover {
+      border-color: rgba(0, 194, 130, 0.3);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
+    .blynk-tab.active {
+      color: #00c282;
+      border-bottom: 2px solid #00c282;
+      font-weight: 700;
+    }
+    .time-btn.active {
+      background-color: #00c282;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .gauge-arc {
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.6s ease;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
       border-radius: 4px;
-    }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.15); opacity: 0.3; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    .pulse-dot {
-      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-black">
+<body class="min-h-screen flex flex-col font-sans">
 
-  <!-- HEADER -->
-  <header class="glass-panel sticky top-0 z-50 border-b border-white/10 px-4 lg:px-8 py-3.5 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-emerald-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
-        <i data-lucide="activity" class="w-6 h-6 text-black font-extrabold"></i>
+  <!-- TOP APP BAR -->
+  <header class="bg-white dark:bg-[#0e1422] border-b border-slate-200 dark:border-white/10 px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center space-x-4">
+      <!-- Blynk Logo Mark -->
+      <div class="w-8 h-8 rounded-lg bg-[#00c282] flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+        B
       </div>
-      <div>
-        <div class="flex items-center space-x-2">
-          <span class="font-extrabold text-xl tracking-tight text-white">CLYNK</span>
-          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">ESP32 Stream</span>
-        </div>
-        <p class="text-xs text-slate-400">Blynk Cloud Alternative • High Speed Telemetry</p>
+      <div class="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <span class="hover:text-slate-800 dark:hover:text-white cursor-pointer">Devices</span>
+        <span>/</span>
+        <span id="nav-device-title" class="font-semibold text-slate-800 dark:text-slate-200">Iot farming system 001</span>
       </div>
     </div>
 
-    <!-- Mode Selector -->
-    <div class="hidden md:flex items-center space-x-2 bg-dark-900/80 p-1 rounded-xl border border-white/10">
-      <button onclick="setStreamMode('http')" id="tab-btn-http" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-500 text-black shadow">
-        <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-        <span>REST / HTTP</span>
-      </button>
-      <button onclick="setStreamMode('mqtt')" id="tab-btn-mqtt" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
-        <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
-        <span>MQTT Cloud</span>
-      </button>
-      <button onclick="setStreamMode('serial')" id="tab-btn-serial" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
-        <i data-lucide="usb" class="w-3.5 h-3.5"></i>
-        <span>USB Web Serial</span>
-      </button>
-      <button onclick="setStreamMode('sim')" id="tab-btn-sim" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
-        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
-        <span>Simulator</span>
-      </button>
+    <!-- Center Search & Filter -->
+    <div class="flex items-center space-x-2">
+      <div class="hidden md:flex items-center bg-slate-100 dark:bg-dark-800 rounded-lg px-3 py-1.5 border border-slate-200 dark:border-white/5 text-xs">
+        <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 mr-2"></i>
+        <input type="text" placeholder="Search datastreams, pins..." class="bg-transparent focus:outline-none text-slate-700 dark:text-slate-200 w-44 font-sans text-xs">
+      </div>
     </div>
 
-    <!-- Status & Actions -->
+    <!-- Actions & Status -->
     <div class="flex items-center space-x-3">
-      <div id="connection-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-dark-900 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
-        <span id="connection-status-text">Live Server Connected</span>
+      <!-- Live Stream Mode Selector -->
+      <div class="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg text-[11px] font-semibold border border-slate-200 dark:border-white/5">
+        <button onclick="setStreamMode('mqtt')" id="mode-btn-mqtt" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition">MQTT Stream</button>
+        <button onclick="setStreamMode('http')" id="mode-btn-http" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">HTTP Polling</button>
+        <button onclick="setStreamMode('sim')" id="mode-btn-sim" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">Simulator</button>
       </div>
-      <button onclick="openFirmwareModal()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition">
-        <i data-lucide="code" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">ESP32 Code</span>
+
+      <!-- Online status pill -->
+      <div id="status-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-[#00c282] text-xs font-bold">
+        <span class="w-2 h-2 rounded-full bg-[#00c282] animate-pulse"></span>
+        <span id="status-text">ONLINE</span>
+      </div>
+
+      <button onclick="openDeviceSettingsModal()" class="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Edit Device Details">
+        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      </button>
+      <button onclick="toggleDarkMode()" class="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-4 h-4"></i>
       </button>
     </div>
   </header>
 
-  <!-- DASHBOARD MAIN -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
-
-    <!-- METRICS STRIP -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <!-- V0 Temp -->
-      <div class="glass-panel rounded-2xl p-4 relative overflow-hidden transition hover:translate-y-[-2px]">
-        <div class="flex justify-between items-start">
-          <span class="text-xs font-semibold text-slate-400">PIN V0 • Temperature</span>
-          <div class="p-2 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20">
-            <i data-lucide="thermometer" class="w-4 h-4"></i>
-          </div>
+  <!-- DEVICE HERO SUBHEADER -->
+  <div class="bg-white dark:bg-[#0e1422] border-b border-slate-200 dark:border-white/10 px-4 lg:px-8 pt-5 pb-0">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-start space-x-3.5">
+        <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300">
+          <i data-lucide="box" class="w-6 h-6 text-[#00c282]"></i>
         </div>
-        <div class="mt-2 flex items-baseline space-x-1">
-          <span id="metric-v0" class="text-3xl font-extrabold text-white tracking-tight font-mono">24.8</span>
-          <span class="text-sm font-semibold text-slate-400">°C</span>
-        </div>
-        <div class="mt-3 flex items-center justify-between text-xs">
-          <span class="text-slate-500">Range: 0 - 60°C</span>
-          <span id="badge-v0" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">NORMAL</span>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 h-1 bg-dark-900">
-          <div id="bar-v0" class="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300" style="width: 41%"></div>
-        </div>
-      </div>
-
-      <!-- V1 Humidity -->
-      <div class="glass-panel rounded-2xl p-4 relative overflow-hidden transition hover:translate-y-[-2px]">
-        <div class="flex justify-between items-start">
-          <span class="text-xs font-semibold text-slate-400">PIN V1 • Humidity</span>
-          <div class="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <i data-lucide="droplets" class="w-4 h-4"></i>
-          </div>
-        </div>
-        <div class="mt-2 flex items-baseline space-x-1">
-          <span id="metric-v1" class="text-3xl font-extrabold text-white tracking-tight font-mono">58.5</span>
-          <span class="text-sm font-semibold text-slate-400">%</span>
-        </div>
-        <div class="mt-3 flex items-center justify-between text-xs">
-          <span class="text-slate-500">Range: 0 - 100%</span>
-          <span id="badge-v1" class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-mono">OPTIMAL</span>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 h-1 bg-dark-900">
-          <div id="bar-v1" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300" style="width: 58.5%"></div>
-        </div>
-      </div>
-
-      <!-- V3 Light Intensity -->
-      <div class="glass-panel rounded-2xl p-4 relative overflow-hidden transition hover:translate-y-[-2px]">
-        <div class="flex justify-between items-start">
-          <span class="text-xs font-semibold text-slate-400">PIN V3 • Light Intensity</span>
-          <div class="p-2 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-            <i data-lucide="sun" class="w-4 h-4"></i>
-          </div>
-        </div>
-        <div class="mt-2 flex items-baseline space-x-1">
-          <span id="metric-v3" class="text-3xl font-extrabold text-white tracking-tight font-mono">128</span>
-          <span class="text-sm font-semibold text-slate-400">lux</span>
-        </div>
-        <div class="mt-3 flex items-center justify-between text-xs">
-          <span class="text-slate-500">Range: 0 - 255</span>
-          <span id="badge-v3" class="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 font-mono">MODERATE</span>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 h-1 bg-dark-900">
-          <div id="bar-v3" class="h-full bg-gradient-to-r from-yellow-500 to-amber-500 transition-all duration-300" style="width: 50%"></div>
-        </div>
-      </div>
-
-      <!-- V4 Voltage -->
-      <div class="glass-panel rounded-2xl p-4 relative overflow-hidden transition hover:translate-y-[-2px]">
-        <div class="flex justify-between items-start">
-          <span class="text-xs font-semibold text-slate-400">PIN V4 • ESP32 Voltage</span>
-          <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <i data-lucide="zap" class="w-4 h-4"></i>
-          </div>
-        </div>
-        <div class="mt-2 flex items-baseline space-x-1">
-          <span id="metric-v4" class="text-3xl font-extrabold text-white tracking-tight font-mono">3.82</span>
-          <span class="text-sm font-semibold text-slate-400">V</span>
-        </div>
-        <div class="mt-3 flex items-center justify-between text-xs">
-          <span class="text-slate-500">Target: 3.3V - 5.0V</span>
-          <span id="badge-v4" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">GOOD</span>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 h-1 bg-dark-900">
-          <div id="bar-v4" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300" style="width: 76%"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CHART + GAUGES -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- Live Stream Chart -->
-      <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col">
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-          <div>
-            <h2 class="text-base font-bold text-white flex items-center space-x-2">
-              <i data-lucide="line-chart" class="w-5 h-5 text-brand-400"></i>
-              <span>Live Sensor Stream</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-0.5">Real-time telemetry stream from ESP32</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="toggleStreamPause()" id="btn-pause-stream" class="px-3 py-1.5 rounded-lg bg-dark-900 hover:bg-dark-800 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center space-x-1 transition">
-              <i data-lucide="pause" id="icon-pause-stream" class="w-3.5 h-3.5"></i>
-              <span id="text-pause-stream">Pause</span>
-            </button>
-            <button onclick="clearStreamData()" class="px-3 py-1.5 rounded-lg bg-dark-900 hover:bg-dark-800 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center space-x-1 transition">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-              <span>Clear</span>
-            </button>
-            <button onclick="exportStreamCSV()" class="px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-xs font-semibold text-brand-400 flex items-center space-x-1 transition">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i>
-              <span>Export CSV</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="flex-1 relative min-h-[300px] mt-4">
-          <canvas id="liveTelemetryChart"></canvas>
-        </div>
-
-        <div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
-          <div class="flex items-center space-x-2">
-            <span class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
-            <span>Streaming Rate: <span id="telemetry-hz" class="text-white font-mono font-bold">1.0</span> updates/sec</span>
-          </div>
-          <div class="font-mono text-slate-500">
-            REST Endpoint: <code class="text-brand-400">/api/blynk/update?V0=25.4</code>
-          </div>
-        </div>
-      </div>
-
-      <!-- Precision Dial Gauges & Relays -->
-      <div class="glass-panel rounded-2xl p-6 flex flex-col space-y-6">
         <div>
-          <h2 class="text-base font-bold text-white flex items-center space-x-2">
-            <i data-lucide="gauge" class="w-5 h-5 text-brand-400"></i>
-            <span>Precision Dial Gauges</span>
-          </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Dual animated radial gauges</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 place-items-center">
-          <div class="flex flex-col items-center">
-            <canvas id="tempGaugeCanvas" width="140" height="140"></canvas>
-            <span class="text-xs font-bold text-orange-400 mt-1">Temp (V0)</span>
-          </div>
-          <div class="flex flex-col items-center">
-            <canvas id="humidityGaugeCanvas" width="140" height="140"></canvas>
-            <span class="text-xs font-bold text-blue-400 mt-1">Humidity (V1)</span>
-          </div>
-        </div>
-
-        <!-- Relays -->
-        <div class="pt-4 border-t border-white/10 space-y-3">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Actuators & Relays</span>
-          
-          <!-- Relay 1 (V2) -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-dark-900/60 border border-white/5">
-            <div class="flex items-center space-x-3">
-              <div id="relay1-icon-box" class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
-                <i data-lucide="power" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <span class="text-xs font-bold text-white">Relay 1 (V2)</span>
-                <p id="relay1-status-text" class="text-[11px] text-slate-400">OFF (0)</p>
-              </div>
-            </div>
-            <button onclick="toggleRelay('V2')" id="btn-relay-v2" class="px-4 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs font-bold border border-white/10 transition">
-              SWITCH
+          <div class="flex items-center space-x-3">
+            <h1 id="device-title" class="text-xl font-bold text-slate-900 dark:text-white">Iot farming system 001</h1>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 text-[#00c282] border border-emerald-200 dark:border-emerald-800/40">ONLINE</span>
+            <button onclick="openDeviceSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs">
+              <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
-
-          <!-- Relay 2 (V5) -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-dark-900/60 border border-white/5">
-            <div class="flex items-center space-x-3">
-              <div id="relay2-icon-box" class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
-                <i data-lucide="lightbulb" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <span class="text-xs font-bold text-white">Lighting (V5)</span>
-                <p id="relay2-status-text" class="text-[11px] text-slate-400">OFF (0)</p>
-              </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <div class="flex items-center space-x-1">
+              <i data-lucide="user" class="w-3.5 h-3.5"></i>
+              <span id="device-owner">Lee</span>
             </div>
-            <button onclick="toggleRelay('V5')" id="btn-relay-v5" class="px-4 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs font-bold border border-white/10 transition">
-              SWITCH
+            <div class="flex items-center space-x-1">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+              <span id="device-location">Farm Villa</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#00c282]"></i>
+              <span id="device-model" class="font-mono text-slate-700 dark:text-slate-300 font-semibold">ESP32 DevKit V1</span>
+            </div>
+            <button onclick="addTagPrompt()" class="text-[#00c282] hover:underline font-semibold flex items-center space-x-0.5">
+              <i data-lucide="tag" class="w-3 h-3"></i>
+              <span>+ Add Tag</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Template Actions -->
+      <div class="flex items-center space-x-2 pb-2 md:pb-0">
+        <button onclick="openCustomizeModal()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 flex items-center space-x-1.5 transition">
+          <i data-lucide="layout" class="w-3.5 h-3.5 text-[#00c282]"></i>
+          <span>Customize Layout</span>
+        </button>
+        <button onclick="saveCurrentTemplate()" class="px-3 py-1.5 rounded-lg bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+          <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+          <span>Save as Template</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BLYNK MAIN NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto flex items-center space-x-8 mt-5 border-t border-slate-100 dark:border-white/5 overflow-x-auto text-xs font-medium">
+      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="blynk-tab active py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+        <span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('datastreams')" id="tab-btn-datastreams" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>Datastreams</span>
+      </button>
+      <button onclick="switchTab('deviceinfo')" id="tab-btn-deviceinfo" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
+        <i data-lucide="info" class="w-4 h-4"></i>
+        <span>Device Info</span>
+      </button>
+      <button onclick="switchTab('firmware')" id="tab-btn-firmware" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
+        <i data-lucide="code-2" class="w-4 h-4"></i>
+        <span>ESP32 Firmware</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN BODY CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+
+    <!-- TAB 1: DASHBOARD VIEW -->
+    <div id="view-dashboard" class="space-y-5">
+      
+      <!-- TIME FILTER TOOLBAR (Blynk Style) -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#0e1422] p-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs">
+        <div class="flex items-center space-x-1 overflow-x-auto">
+          <button onclick="setTimeFilter('latest')" id="tbtn-latest" class="time-btn active px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition">Latest</button>
+          <button onclick="setTimeFilter('1h')" id="tbtn-1h" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Last Hour</button>
+          <button onclick="setTimeFilter('6h')" id="tbtn-6h" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">6 Hours</button>
+          <button onclick="setTimeFilter('1d')" id="tbtn-1d" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">1 Day</button>
+          <button onclick="setTimeFilter('1w')" id="tbtn-1w" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">1 Week</button>
+          <button onclick="setTimeFilter('1m')" id="tbtn-1m" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">1 Month</button>
+          <button onclick="setTimeFilter('3m')" id="tbtn-3m" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">3 Months</button>
+        </div>
+
+        <div class="flex items-center space-x-2 text-slate-500 text-xs font-mono">
+          <span>Rate: <b id="packet-rate-hz" class="text-emerald-500">1.0</b> Hz</span>
+          <span>•</span>
+          <button onclick="exportCSVData()" class="hover:text-emerald-600 flex items-center space-x-1 font-sans font-semibold">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN WIDGET GRID (Matches User Screenshot: 2 Columns of [Gauge | Chart] & [Switch | Chart]) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5" id="dashboard-widget-container">
+        
+        <!-- ROW 1, COL 1: TEMPERATURE (V0) GAUGE + CHART -->
+        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">TEMPERATURE (V0)</span>
+            <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">STREAMING</span>
+          </div>
+
+          <!-- Circular SVG Gauge -->
+          <div class="relative flex items-center justify-center my-3">
+            <svg class="w-40 h-40" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
+              <circle id="gauge-arc-v0" cx="50" cy="50" r="40" fill="none" stroke="#facc15" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="99" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
+            </svg>
+            <div class="absolute text-center">
+              <span id="gauge-val-v0" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">28.3</span>
+              <span class="text-sm font-semibold text-slate-400">°C</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
+            <span>0 °C</span>
+            <span>Max 60 °C</span>
+          </div>
+        </div>
+
+        <!-- ROW 1, COL 2: TEMPERATURE CHART -->
+        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Temperature Chart</span>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">PIN V0 • Live History</span>
+          </div>
+          <div class="relative h-44 w-full">
+            <canvas id="chart-v0"></canvas>
+          </div>
+        </div>
+
+        <!-- ROW 2, COL 1: HUMIDITY (V1) GAUGE + CHART -->
+        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">HUMIDITY (V1)</span>
+            <span class="text-[10px] font-mono text-blue-500 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded font-bold">OPTIMAL</span>
+          </div>
+
+          <!-- Circular SVG Gauge -->
+          <div class="relative flex items-center justify-center my-3">
+            <svg class="w-40 h-40" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
+              <circle id="gauge-arc-v1" cx="50" cy="50" r="40" fill="none" stroke="#0284c7" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="20" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
+            </svg>
+            <div class="absolute text-center">
+              <span id="gauge-val-v1" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">89</span>
+              <span class="text-sm font-semibold text-slate-400">%</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
+            <span>0 %</span>
+            <span>Max 100 %</span>
+          </div>
+        </div>
+
+        <!-- ROW 2, COL 2: HUMIDITY CHART -->
+        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Humidity Chart</span>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">PIN V1 • Live History</span>
+          </div>
+          <div class="relative h-44 w-full">
+            <canvas id="chart-v1"></canvas>
+          </div>
+        </div>
+
+        <!-- ROW 3, COL 1: SOIL MOISTURE (V6) GAUGE -->
+        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">SOIL MOISTURE (V6)</span>
+            <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">NORMAL</span>
+          </div>
+
+          <!-- Circular SVG Gauge -->
+          <div class="relative flex items-center justify-center my-3">
+            <svg class="w-40 h-40" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
+              <circle id="gauge-arc-v6" cx="50" cy="50" r="40" fill="none" stroke="#00c282" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="102" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
+            </svg>
+            <div class="absolute text-center">
+              <span id="gauge-val-v6" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">46</span>
+              <span class="text-sm font-semibold text-slate-400">%</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
+            <span>0 %</span>
+            <span>Max 100 %</span>
+          </div>
+        </div>
+
+        <!-- ROW 3, COL 2: SOIL MOISTURE CHART -->
+        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#00c282]"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Soil Moisture Chart</span>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">PIN V6 • Live History</span>
+          </div>
+          <div class="relative h-44 w-full">
+            <canvas id="chart-v6"></canvas>
+          </div>
+        </div>
+
+        <!-- ROW 4: ACTUATORS & SWITCHES (Water Pump V3 & Alarm V2) -->
+        <div class="xl:col-span-6 blynk-card p-5 flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div id="pump-icon-box" class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center">
+              <i data-lucide="waves" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ACTUATOR • PIN V3</span>
+              <h3 class="text-base font-extrabold text-slate-800 dark:text-white">Water Pump</h3>
+              <p id="pump-status-label" class="text-xs font-semibold text-emerald-600 mt-0.5">STATUS: RUNNING (1)</p>
+            </div>
+          </div>
+          <button onclick="toggleActuator('V3')" id="btn-toggle-v3" class="px-5 py-2.5 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold shadow-md transition">
+            SWITCH OFF
+          </button>
+        </div>
+
+        <div class="xl:col-span-6 blynk-card p-5 flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div id="alarm-icon-box" class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center">
+              <i data-lucide="bell" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ALERT SYSTEM • PIN V2</span>
+              <h3 class="text-base font-extrabold text-slate-800 dark:text-white">System Siren / Alarm</h3>
+              <p id="alarm-status-label" class="text-xs font-semibold text-slate-400 mt-0.5">STATUS: IDLE (0)</p>
+            </div>
+          </div>
+          <button onclick="toggleActuator('V2')" id="btn-toggle-v2" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition">
+            ACTIVATE
+          </button>
         </div>
 
       </div>
     </div>
 
-    <!-- PIN MATRIX & TERMINAL -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- TAB 2: DATASTREAMS VIEW (Blynk Datastreams Manager) -->
+    <div id="view-datastreams" class="hidden space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Virtual Datastreams Manager</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Map specific ports, units, and min/max boundaries just like Blynk</p>
+        </div>
+        <button onclick="openNewDatastreamModal()" class="px-4 py-2 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>New Datastream</span>
+        </button>
+      </div>
 
-      <!-- Virtual Pin Matrix (V0 to V15) -->
-      <div class="lg:col-span-2 glass-panel rounded-2xl p-6">
-        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="blynk-card overflow-hidden">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-white/10 text-slate-500 font-semibold uppercase text-[10px]">
+            <tr>
+              <th class="p-3.5 pl-5">Pin / Port</th>
+              <th class="p-3.5">Datastream Name</th>
+              <th class="p-3.5">Data Type</th>
+              <th class="p-3.5">Unit</th>
+              <th class="p-3.5">Min - Max</th>
+              <th class="p-3.5">Current Value</th>
+              <th class="p-3.5 text-right pr-5">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="datastreams-table-body" class="divide-y divide-slate-100 dark:divide-white/5 font-mono">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: DEVICE INFO VIEW -->
+    <div id="view-deviceinfo" class="hidden space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="blynk-card p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-2">Hardware Specification</h3>
+          <div class="space-y-3 text-xs">
+            <div class="flex justify-between"><span class="text-slate-500">Device Model:</span><span id="info-model" class="font-bold text-slate-800 dark:text-white">ESP32 DevKit V1</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Firmware Build:</span><span class="font-mono text-emerald-600">v2.4.0-clynk-stable</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Connection Protocol:</span><span id="info-protocol" class="font-semibold text-slate-800 dark:text-white">MQTT over WSS (1.0 Hz)</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">MAC Address:</span><span class="font-mono text-slate-600 dark:text-slate-400">24:6F:28:B4:7E:9C</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Auth Token / Device ID:</span><span id="info-devid" class="font-mono text-slate-800 dark:text-slate-200">device1</span></div>
+          </div>
+        </div>
+
+        <div class="blynk-card p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-2">Cloud & Telemetry Status</h3>
+          <div class="space-y-3 text-xs">
+            <div class="flex justify-between"><span class="text-slate-500">MQTT Broker:</span><span class="font-mono text-slate-800 dark:text-white">broker.emqx.io</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">MQTT Port:</span><span class="font-mono text-slate-800 dark:text-white">1883 (TCP) / 8084 (WSS)</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">MQTT Topic:</span><span class="font-mono text-[#00c282]">clynk/device1/#</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">REST Update Endpoint:</span><span class="font-mono text-slate-600 dark:text-slate-400">/api/blynk/update</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ESP32 FIRMWARE VIEW -->
+    <div id="view-firmware" class="hidden space-y-5">
+      <div class="blynk-card p-6 space-y-4">
+        <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-white flex items-center space-x-2">
-              <i data-lucide="grid" class="w-5 h-5 text-brand-400"></i>
-              <span>Virtual Pin Inspector (V0 – V15)</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-0.5">Click any pin to inspect or override</p>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Generated Arduino C++ Sketch</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Flash this sketch to your ESP32 to stream all configured datastreams directly to this console</p>
           </div>
-        </div>
-
-        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2.5 mt-4" id="pin-matrix-grid"></div>
-
-        <!-- Quick Override -->
-        <div class="mt-5 p-3.5 rounded-xl bg-dark-900/60 border border-white/5 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-slate-300">Quick Write:</span>
-            <select id="quick-pin-select" class="bg-dark-850 text-white text-xs rounded-lg px-2.5 py-1.5 border border-white/10 font-mono">
-              <option value="V0">V0 (Temp)</option>
-              <option value="V1">V1 (Humidity)</option>
-              <option value="V2">V2 (Relay 1)</option>
-              <option value="V3">V3 (Light)</option>
-              <option value="V4">V4 (Voltage)</option>
-              <option value="V5">V5 (Lighting)</option>
-              <option value="V6">V6 (Generic)</option>
-              <option value="V7">V7 (Generic)</option>
-            </select>
-            <input type="text" id="quick-pin-value" placeholder="Value (e.g. 42.5)" class="bg-dark-850 text-white text-xs rounded-lg px-3 py-1.5 border border-white/10 font-mono w-28 focus:outline-none focus:border-brand-500">
-          </div>
-          <button onclick="sendQuickPinWrite()" class="px-4 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-400 text-black text-xs font-bold transition flex items-center space-x-1">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i>
-            <span>Push Value</span>
+          <button onclick="copyFirmwareCode()" class="px-3.5 py-1.5 rounded-lg bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-btn-text">Copy Code</span>
           </button>
         </div>
+
+        <pre id="firmware-code-block" class="p-4 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs overflow-x-auto max-h-[420px] custom-scroll leading-relaxed border border-slate-800"></pre>
       </div>
-
-      <!-- Live Terminal -->
-      <div class="glass-panel rounded-2xl p-6 flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
-          <div class="flex items-center space-x-2">
-            <i data-lucide="terminal" class="w-4 h-4 text-brand-400"></i>
-            <span class="text-sm font-bold text-white">Stream Terminal</span>
-          </div>
-          <button onclick="clearTerminalLogs()" class="text-slate-400 hover:text-white text-xs flex items-center space-x-1">
-            <i data-lucide="trash-2" class="w-3 h-3"></i>
-            <span>Clear</span>
-          </button>
-        </div>
-
-        <div id="terminal-log" class="flex-1 min-h-[220px] max-h-[220px] overflow-y-auto mt-3 p-3 rounded-xl bg-black/60 border border-white/5 font-mono text-[11px] space-y-1 custom-scrollbar text-slate-300">
-          <div class="text-emerald-400 font-bold">[SYSTEM] Clynk Engine Initialized.</div>
-          <div class="text-slate-500">[STREAM] Ready to receive ESP32 Telemetry.</div>
-        </div>
-
-        <div class="mt-3 flex items-center space-x-2">
-          <input type="text" id="terminal-input" placeholder="Type serial command or MQTT topic..." class="flex-1 bg-dark-900 text-white text-xs rounded-lg px-3 py-2 border border-white/10 font-mono focus:outline-none focus:border-brand-500" onkeydown="if(event.key==='Enter') sendTerminalCommand()">
-          <button onclick="sendTerminalCommand()" class="p-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-white border border-white/10 transition">
-            <i data-lucide="corner-down-left" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
     </div>
 
   </main>
 
-  <!-- MODAL: ESP32 CODE GENERATOR -->
-  <div id="firmware-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-panel rounded-2xl max-w-2xl w-full p-6 space-y-4 border border-white/15 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
-        <div class="flex items-center space-x-2">
-          <i data-lucide="cpu" class="w-5 h-5 text-indigo-400"></i>
-          <h3 class="text-base font-bold text-white">ESP32 Arduino Firmware Code (HTTP / REST)</h3>
-        </div>
-        <button onclick="closeFirmwareModal()" class="text-slate-400 hover:text-white p-1">
+  <!-- MODAL: DEVICE SETTINGS & MODEL SELECTION -->
+  <div id="modal-device-settings" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <i data-lucide="settings" class="w-5 h-5 text-[#00c282]"></i>
+          <span>Device & Model Settings</span>
+        </h3>
+        <button onclick="closeDeviceSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">
-        Copy this sketch into Arduino IDE. It uses standard HTTP GET requests to stream data directly to your Clynk Cloud endpoint!
-      </p>
-
-      <div class="relative">
-        <pre class="bg-black/90 p-4 rounded-xl text-emerald-400 font-mono text-[11px] overflow-x-auto max-h-[340px] custom-scrollbar border border-white/10" id="esp32-code-box">
-#include &lt;WiFi.h&gt;
-#include &lt;HTTPClient.h&gt;
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-
-// Your Clynk Cloud Deployment URL
-const char* serverUrl = "https://clynk.vercel.app/api/blynk/update";
-
-void setup() {
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi Connected! IP: " + WiFi.localIP().toString());
-}
-
-void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    
-    // Read or simulate sensor values
-    float temp = 24.5 + (random(0, 30) / 10.0);
-    float hum = 55.0 + (random(0, 50) / 10.0);
-    float volt = 3.8 + (random(-10, 10) / 100.0);
-
-    String url = String(serverUrl) + "?V0=" + String(temp, 1) + "&V1=" + String(hum, 1) + "&V4=" + String(volt, 2);
-    
-    http.begin(url);
-    int httpResponseCode = http.GET();
-    
-    if (httpResponseCode > 0) {
-      Serial.printf("HTTP %d | Sent: Temp=%.1f C, Hum=%.1f %%\n", httpResponseCode, temp, hum);
-    }
-    http.end();
-  }
-  
-  delay(1000); // Send every 1 second
-}</pre>
-        <button onclick="copyFirmwareCode()" id="btn-copy-code" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-white text-xs font-bold border border-white/20 flex items-center space-x-1.5 transition">
-          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-          <span id="copy-code-text">Copy Code</span>
-        </button>
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Device Name</label>
+          <input type="text" id="edit-dev-name" value="Iot farming system 001" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Hardware Model</label>
+          <select id="edit-dev-model" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+            <option value="ESP32 DevKit V1" selected>ESP32 DevKit V1 (Wi-Fi + BLE)</option>
+            <option value="ESP8266 NodeMCU">ESP8266 NodeMCU</option>
+            <option value="Raspberry Pi Pico W">Raspberry Pi Pico W</option>
+            <option value="Arduino Uno + ESP01">Arduino Uno / Mega</option>
+            <option value="STM32 Nucleo">STM32 Nucleo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Location / Tag</label>
+          <input type="text" id="edit-dev-location" value="Farm Villa" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Device ID (MQTT Topic ID)</label>
+          <input type="text" id="edit-dev-id" value="device1" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+        </div>
       </div>
 
-      <div class="pt-2 flex justify-end">
-        <button onclick="closeFirmwareModal()" class="px-4 py-2 rounded-xl bg-brand-500 text-black text-xs font-bold hover:bg-brand-400 transition">Done</button>
+      <div class="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-end space-x-2">
+        <button onclick="closeDeviceSettingsModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs">Cancel</button>
+        <button onclick="saveDeviceSettings()" class="px-4 py-2 rounded-lg bg-[#00c282] text-white font-bold text-xs hover:bg-[#00a36d]">Save Changes</button>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPT -->
+  <!-- JAVASCRIPT LOGIC ENGINE -->
   <script>
-    const state = {
-      streamMode: 'http',
-      isPaused: false,
-      serialPort: null,
+    // --- Global Application State ---
+    const appState = {
+      deviceName: localStorage.getItem('clynk_dev_name') || 'Iot farming system 001',
+      deviceModel: localStorage.getItem('clynk_dev_model') || 'ESP32 DevKit V1',
+      deviceLocation: localStorage.getItem('clynk_dev_location') || 'Farm Villa',
+      deviceId: localStorage.getItem('clynk_dev_id') || 'device1',
+      streamMode: 'mqtt', // 'mqtt' | 'http' | 'sim'
+      timeFilter: 'latest',
       mqttClient: null,
       simInterval: null,
       pollInterval: null,
       packetCount: 0,
+      datastreams: JSON.parse(localStorage.getItem('clynk_datastreams') || JSON.stringify([
+        { pin: 'V0', name: 'Temperature', type: 'Double', unit: '°C', min: 0, max: 60, color: '#facc15' },
+        { pin: 'V1', name: 'Humidity', type: 'Double', unit: '%', min: 0, max: 100, color: '#0284c7' },
+        { pin: 'V2', name: 'Alarm Siren', type: 'Integer', unit: 'state', min: 0, max: 1, color: '#ef4444' },
+        { pin: 'V3', name: 'Water Pump', type: 'Integer', unit: 'state', min: 0, max: 1, color: '#00c282' },
+        { pin: 'V4', name: 'ESP32 Voltage', type: 'Double', unit: 'V', min: 0, max: 5, color: '#10b981' },
+        { pin: 'V6', name: 'Soil Moisture', type: 'Double', unit: '%', min: 0, max: 100, color: '#00c282' },
+        { pin: 'V7', name: 'Solar Light Lux', type: 'Integer', unit: 'lux', min: 0, max: 1000, color: '#f59e0b' }
+      ])),
       pins: {
-        V0: 24.8, V1: 58.5, V2: 0, V3: 128, V4: 3.82, V5: 0,
-        V6: 0, V7: 0, V8: 0, V9: 0, V10: 0, V11: 0, V12: 0, V13: 0, V14: 0, V15: 0
+        V0: 28.3, V1: 89.0, V2: 0, V3: 1, V4: 3.82, V5: 0, V6: 46.0, V7: 340
       }
     };
 
-    let telemetryChart = null, tempGauge = null, humGauge = null;
+    const charts = {};
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      initPinMatrix();
-      initChart();
-      initGauges();
-      startHttpPolling();
+      applyHeaderInfo();
+      renderDatastreamsTable();
+      initAllCharts();
+      updateFirmwareCodeBlock();
+      startMQTTStream();
 
+      // Rate ticker
       setInterval(() => {
-        const hz = state.packetCount;
-        state.packetCount = 0;
-        const el = document.getElementById('telemetry-hz');
-        if (el) el.innerText = hz.toFixed(1);
+        const rate = appState.packetCount;
+        appState.packetCount = 0;
+        const el = document.getElementById('packet-rate-hz');
+        if (el) el.innerText = rate.toFixed(1);
       }, 1000);
     });
 
+    // --- Header & Info Sync ---
+    function applyHeaderInfo() {
+      document.getElementById('device-title').innerText = appState.deviceName;
+      document.getElementById('nav-device-title').innerText = appState.deviceName;
+      document.getElementById('device-model').innerText = appState.deviceModel;
+      document.getElementById('info-model').innerText = appState.deviceModel;
+      document.getElementById('device-location').innerText = appState.deviceLocation;
+      document.getElementById('info-devid').innerText = appState.deviceId;
+    }
+
+    // --- Tab Switcher ---
+    function switchTab(tabId) {
+      ['dashboard', 'datastreams', 'deviceinfo', 'firmware'].forEach(t => {
+        const v = document.getElementById('view-' + t);
+        const b = document.getElementById('tab-btn-' + t);
+        if (v) v.classList.toggle('hidden', t !== tabId);
+        if (b) b.classList.toggle('active', t === tabId);
+      });
+      lucide.createIcons();
+    }
+
+    // --- Stream Mode Switcher ---
     function setStreamMode(mode) {
-      state.streamMode = mode;
-      ['http', 'mqtt', 'serial', 'sim'].forEach(m => {
-        const btn = document.getElementById('tab-btn-' + m);
-        if (btn) btn.className = (m === mode) 
-          ? 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-500 text-black shadow'
-          : 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white';
+      appState.streamMode = mode;
+      ['mqtt', 'http', 'sim'].forEach(m => {
+        const btn = document.getElementById('mode-btn-' + m);
+        if (btn) {
+          btn.className = (m === mode) 
+            ? 'px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition font-bold'
+            : 'px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition';
+        }
       });
 
-      if (state.simInterval) { clearInterval(state.simInterval); state.simInterval = null; }
-      if (state.pollInterval) { clearInterval(state.pollInterval); state.pollInterval = null; }
+      if (appState.simInterval) { clearInterval(appState.simInterval); appState.simInterval = null; }
+      if (appState.pollInterval) { clearInterval(appState.pollInterval); appState.pollInterval = null; }
 
-      if (mode === 'http') startHttpPolling();
       if (mode === 'mqtt') startMQTTStream();
-      if (mode === 'serial') startSerialStream();
+      if (mode === 'http') startHttpPolling();
       if (mode === 'sim') startSimulatorStream();
     }
 
+    // --- MQTT Stream Engine ---
+    function startMQTTStream() {
+      if (appState.mqttClient) {
+        appState.mqttClient.end(true);
+      }
+      try {
+        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: 'clynk_console_' + Math.random().toString(16).slice(2, 8) });
+        appState.mqttClient = client;
+
+        client.on('connect', () => {
+          client.subscribe(`clynk/${appState.deviceId}/#`);
+          document.getElementById('status-text').innerText = 'ONLINE (MQTT)';
+        });
+
+        client.on('message', (topic, payload) => {
+          appState.packetCount++;
+          const pin = topic.split('/').pop().toUpperCase();
+          const val = parseFloat(payload.toString());
+          if (!isNaN(val)) {
+            appState.pins[pin] = val;
+            updateWidgetUI(pin, val);
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // --- HTTP Polling Engine ---
     function startHttpPolling() {
-      logTerminal('[MODE] REST / HTTP Polling Active', 'emerald');
-      state.pollInterval = setInterval(async () => {
-        if (state.isPaused) return;
+      document.getElementById('status-text').innerText = 'ONLINE (HTTP)';
+      appState.pollInterval = setInterval(async () => {
         try {
           const res = await fetch('/api/pins');
           if (res.ok) {
             const data = await res.json();
             if (data.pins) {
-              state.packetCount++;
+              appState.packetCount++;
               for (const [k, v] of Object.entries(data.pins)) {
-                state.pins[k] = isNaN(Number(v)) ? v : Number(v);
-                updateDashboardUI(k);
+                const num = parseFloat(v);
+                if (!isNaN(num)) {
+                  appState.pins[k] = num;
+                  updateWidgetUI(k, num);
+                }
               }
             }
           }
@@ -569,242 +714,330 @@ void loop() {
       }, 1000);
     }
 
-    function startMQTTStream() {
-      logTerminal('[MQTT] Connecting to broker.emqx.io...', 'slate');
-      try {
-        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: 'clynk_' + Math.random().toString(16).slice(2,8) });
-        state.mqttClient = client;
-        client.on('connect', () => {
-          client.subscribe('clynk/device1/#');
-          logTerminal('[MQTT] Subscribed to clynk/device1/#', 'emerald');
-        });
-        client.on('message', (topic, payload) => {
-          state.packetCount++;
-          const pin = topic.split('/').pop().toUpperCase();
-          const val = payload.toString();
-          if (state.pins.hasOwnProperty(pin)) {
-            state.pins[pin] = isNaN(Number(val)) ? val : Number(val);
-            updateDashboardUI(pin);
-          }
-        });
-      } catch (e) { logTerminal('[MQTT Error] ' + e.message, 'red'); }
-    }
-
-    async function startSerialStream() {
-      if (!('serial' in navigator)) {
-        alert('Web Serial is supported in Chrome/Edge. Please connect via USB on Chrome/Edge.');
-        return;
-      }
-      try {
-        const port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 115200 });
-        state.serialPort = port;
-        logTerminal('[SERIAL] Connected at 115200 baud', 'emerald');
-        const decoder = new TextDecoderStream();
-        port.readable.pipeTo(decoder.writable);
-        const reader = decoder.readable.getReader();
-        let buf = '';
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          if (value) {
-            buf += value;
-            const lines = buf.split('\\n');
-            buf = lines.pop();
-            for (const line of lines) {
-              const match = line.match(/(V\\d+)\\s*[:=]\\s*([0-9.-]+)/i);
-              if (match) {
-                const pin = match[1].toUpperCase(), val = parseFloat(match[2]);
-                if (state.pins.hasOwnProperty(pin)) {
-                  state.pins[pin] = val;
-                  updateDashboardUI(pin);
-                }
-              }
-            }
-          }
-        }
-      } catch (e) { logTerminal('[SERIAL Error] ' + e.message, 'red'); }
-    }
-
+    // --- Simulator Engine ---
     function startSimulatorStream() {
-      logTerminal('[SIM] Virtual ESP32 Simulator Started', 'cyan');
+      document.getElementById('status-text').innerText = 'SIMULATING';
       let t = 0;
-      state.simInterval = setInterval(() => {
-        if (state.isPaused) return;
-        state.packetCount++;
+      appState.simInterval = setInterval(() => {
+        appState.packetCount++;
         t += 0.1;
-        state.pins.V0 = parseFloat((24.0 + Math.sin(t)*3.5 + Math.random()*0.3).toFixed(1));
-        state.pins.V1 = parseFloat((55.0 + Math.cos(t*0.8)*8.0 + Math.random()*0.5).toFixed(1));
-        state.pins.V3 = Math.floor(120 + Math.sin(t*0.5)*40);
-        state.pins.V4 = parseFloat((3.8 + Math.sin(t*0.2)*0.15).toFixed(2));
-        updateDashboardUI('V0');
-        updateDashboardUI('V1');
-        updateDashboardUI('V3');
-        updateDashboardUI('V4');
+        const temp = parseFloat((28.0 + Math.sin(t) * 2.5 + (Math.random() * 0.3)).toFixed(1));
+        const hum = Math.floor(88 + Math.cos(t * 0.8) * 5);
+        const soil = Math.floor(46 + Math.sin(t * 0.5) * 3);
+
+        appState.pins.V0 = temp;
+        appState.pins.V1 = hum;
+        appState.pins.V6 = soil;
+
+        updateWidgetUI('V0', temp);
+        updateWidgetUI('V1', hum);
+        updateWidgetUI('V6', soil);
       }, 1000);
     }
 
-    function updateDashboardUI(pin) {
-      const val = state.pins[pin];
-      if (pin === 'V0') {
-        const el = document.getElementById('metric-v0'); if (el) el.innerText = Number(val).toFixed(1);
-        const bar = document.getElementById('bar-v0'); if (bar) bar.style.width = Math.min(100, Math.max(0, (val/60)*100)) + '%';
-        if (tempGauge) tempGauge.value = val;
+    // --- UI Synchronizer ---
+    function updateWidgetUI(pin, val) {
+      // 1. Update Gauge text & Arc
+      const valEl = document.getElementById('gauge-val-' + pin.toLowerCase());
+      if (valEl) valEl.innerText = val;
+
+      const arcEl = document.getElementById('gauge-arc-' + pin.toLowerCase());
+      if (arcEl) {
+        // circumference is 188.5 for 270 deg arc
+        let max = 100;
+        if (pin === 'V0') max = 60;
+        if (pin === 'V1' || pin === 'V6') max = 100;
+        const percent = Math.min(1, Math.max(0, val / max));
+        const offset = 188.5 - (percent * 188.5);
+        arcEl.style.strokeDashoffset = offset;
       }
-      if (pin === 'V1') {
-        const el = document.getElementById('metric-v1'); if (el) el.innerText = Number(val).toFixed(1);
-        const bar = document.getElementById('bar-v1'); if (bar) bar.style.width = Math.min(100, Math.max(0, val)) + '%';
-        if (humGauge) humGauge.value = val;
-      }
+
+      // 2. Update Actuators
       if (pin === 'V3') {
-        const el = document.getElementById('metric-v3'); if (el) el.innerText = Math.round(val);
-        const bar = document.getElementById('bar-v3'); if (bar) bar.style.width = Math.min(100, Math.max(0, (val/255)*100)) + '%';
+        const active = Number(val) > 0;
+        const box = document.getElementById('pump-icon-box');
+        const lbl = document.getElementById('pump-status-label');
+        const btn = document.getElementById('btn-toggle-v3');
+        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
+        if (lbl) { lbl.innerText = active ? 'STATUS: RUNNING (1)' : 'STATUS: STOPPED (0)'; lbl.className = active ? 'text-xs font-semibold text-emerald-600 mt-0.5' : 'text-xs font-semibold text-slate-400 mt-0.5'; }
+        if (btn) { btn.innerText = active ? 'SWITCH OFF' : 'SWITCH ON'; btn.className = active ? 'px-5 py-2.5 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold shadow-md transition' : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition'; }
       }
-      if (pin === 'V4') {
-        const el = document.getElementById('metric-v4'); if (el) el.innerText = Number(val).toFixed(2);
-        const bar = document.getElementById('bar-v4'); if (bar) bar.style.width = Math.min(100, Math.max(0, (val/5.0)*100)) + '%';
-      }
+
       if (pin === 'V2') {
         const active = Number(val) > 0;
-        const box = document.getElementById('relay1-icon-box'), txt = document.getElementById('relay1-status-text');
-        if (box) box.className = active ? 'w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center' : 'w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400';
-        if (txt) txt.innerText = active ? 'ON (1)' : 'OFF (0)';
+        const box = document.getElementById('alarm-icon-box');
+        const lbl = document.getElementById('alarm-status-label');
+        const btn = document.getElementById('btn-toggle-v2');
+        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/30 flex items-center justify-center animate-bounce' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
+        if (lbl) { lbl.innerText = active ? 'STATUS: ALARM ACTIVE (1)' : 'STATUS: IDLE (0)'; lbl.className = active ? 'text-xs font-semibold text-red-500 mt-0.5' : 'text-xs font-semibold text-slate-400 mt-0.5'; }
+        if (btn) { btn.innerText = active ? 'SILENCE' : 'ACTIVATE'; btn.className = active ? 'px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-md transition' : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition'; }
       }
-      if (pin === 'V5') {
-        const active = Number(val) > 0;
-        const box = document.getElementById('relay2-icon-box'), txt = document.getElementById('relay2-status-text');
-        if (box) box.className = active ? 'w-9 h-9 rounded-lg bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 flex items-center justify-center' : 'w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400';
-        if (txt) txt.innerText = active ? 'ON (1)' : 'OFF (0)';
-      }
-      const matrixVal = document.getElementById('pin-val-' + pin);
-      if (matrixVal) matrixVal.innerText = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val;
 
-      if (telemetryChart && (pin === 'V0' || pin === 'V1')) {
-        const now = new Date().toLocaleTimeString();
-        if (telemetryChart.data.labels.length > 25) {
-          telemetryChart.data.labels.shift();
-          telemetryChart.data.datasets[0].data.shift();
-          telemetryChart.data.datasets[1].data.shift();
+      // 3. Update Chart
+      const ch = charts[pin];
+      if (ch) {
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (ch.data.labels.length > 25) {
+          ch.data.labels.shift();
+          ch.data.datasets[0].data.shift();
         }
-        telemetryChart.data.labels.push(now);
-        telemetryChart.data.datasets[0].data.push(state.pins.V0);
-        telemetryChart.data.datasets[1].data.push(state.pins.V1);
-        telemetryChart.update('none');
+        ch.data.labels.push(now);
+        ch.data.datasets[0].data.push(val);
+        ch.update('none');
       }
+
+      // 4. Update Datastreams Table
+      const tableVal = document.getElementById('table-val-' + pin);
+      if (tableVal) tableVal.innerText = val;
     }
 
-    function initChart() {
-      const ctx = document.getElementById('liveTelemetryChart').getContext('2d');
-      telemetryChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['10:00', '10:01', '10:02', '10:03', '10:04'],
-          datasets: [
-            { label: 'Temp (°C)', data: [24.5, 24.6, 24.8, 24.7, 24.8], borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.15)', fill: true, tension: 0.35, borderWidth: 2.5 },
-            { label: 'Humidity (%)', data: [58.0, 58.2, 58.5, 58.4, 58.5], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.15)', fill: true, tension: 0.35, borderWidth: 2.5 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, animation: false,
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } },
-            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } }
+    // --- Chart Initializer ---
+    function initAllCharts() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      const configs = [
+        { id: 'V0', color: '#facc15', label: 'TEMPERATURE', min: 0, max: 50, initial: [27.8, 28.0, 28.2, 28.3] },
+        { id: 'V1', color: '#0284c7', label: 'HUMIDITY', min: 0, max: 100, initial: [87, 88, 89, 89] },
+        { id: 'V6', color: '#00c282', label: 'SOIL MOISTURE', min: 0, max: 100, initial: [45, 45, 46, 46] }
+      ];
+
+      configs.forEach(c => {
+        const ctx = document.getElementById('chart-' + c.id.toLowerCase());
+        if (!ctx) return;
+        charts[c.id] = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['08:32 PM', '08:34 PM', '08:36 PM', '08:38 PM'],
+            datasets: [{
+              label: c.label,
+              data: c.initial,
+              borderColor: c.color,
+              backgroundColor: c.color + '15',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.25,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } },
+              y: { min: c.min, max: c.max, grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } }
+            }
           }
-        }
+        });
       });
     }
 
-    function initGauges() {
-      tempGauge = new RadialGauge({
-        renderTo: 'tempGaugeCanvas', width: 140, height: 140, units: '°C', minValue: 0, maxValue: 60, value: 24.8,
-        majorTicks: ['0', '15', '30', '45', '60'], colorPlate: 'transparent', colorUnits: '#f97316', colorNumbers: '#cbd5e1', colorNeedle: '#f97316', borders: false
-      }).draw();
-      humGauge = new RadialGauge({
-        renderTo: 'humidityGaugeCanvas', width: 140, height: 140, units: '%', minValue: 0, maxValue: 100, value: 58.5,
-        majorTicks: ['0', '25', '50', '75', '100'], colorPlate: 'transparent', colorUnits: '#3b82f6', colorNumbers: '#cbd5e1', colorNeedle: '#3b82f6', borders: false
-      }).draw();
+    // --- Actuator Toggle ---
+    function toggleActuator(pin) {
+      const next = (Number(appState.pins[pin]) || 0) > 0 ? 0 : 1;
+      appState.pins[pin] = next;
+      updateWidgetUI(pin, next);
+
+      // Send via MQTT
+      if (appState.mqttClient && appState.mqttClient.connected) {
+        appState.mqttClient.publish(`clynk/${appState.deviceId}/${pin}`, String(next));
+      }
+      // Send via HTTP
+      fetch(`/api/blynk/update?pin=${pin}&value=${next}`).catch(() => {});
     }
 
-    function initPinMatrix() {
-      const grid = document.getElementById('pin-matrix-grid');
-      grid.innerHTML = '';
-      for (let i = 0; i < 16; i++) {
-        const pin = 'V' + i, val = state.pins[pin];
-        const card = document.createElement('div');
-        card.className = 'p-3 rounded-xl bg-dark-900/80 border border-white/5 hover:border-brand-500/40 transition cursor-pointer flex flex-col justify-between';
-        card.onclick = () => {
-          document.getElementById('quick-pin-select').value = pin;
-          document.getElementById('quick-pin-value').focus();
-        };
-        card.innerHTML = '<div class="flex items-center justify-between"><span class="text-[11px] font-bold text-slate-400">' + pin + '</span></div><div class="mt-2 text-base font-extrabold text-white font-mono" id="pin-val-' + pin + '">' + val + '</div>';
-        grid.appendChild(card);
+    // --- Datastreams Table Renderer ---
+    function renderDatastreamsTable() {
+      const tbody = document.getElementById('datastreams-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      appState.datastreams.forEach(ds => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="p-3.5 pl-5 font-bold text-[#00c282]">${ds.pin}</td>
+          <td class="p-3.5 font-sans font-semibold text-slate-800 dark:text-slate-200">${ds.name}</td>
+          <td class="p-3.5 text-slate-500">${ds.type}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold">${ds.unit}</span></td>
+          <td class="p-3.5 text-slate-500">${ds.min} - ${ds.max}</td>
+          <td class="p-3.5 font-bold text-slate-900 dark:text-white" id="table-val-${ds.pin}">${appState.pins[ds.pin] || '0'}</td>
+          <td class="p-3.5 text-right pr-5">
+            <button onclick="editDatastreamPrompt('${ds.pin}')" class="text-slate-400 hover:text-[#00c282] mr-2">Edit</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- Device Settings Modal Handlers ---
+    function openDeviceSettingsModal() {
+      document.getElementById('edit-dev-name').value = appState.deviceName;
+      document.getElementById('edit-dev-model').value = appState.deviceModel;
+      document.getElementById('edit-dev-location').value = appState.deviceLocation;
+      document.getElementById('edit-dev-id').value = appState.deviceId;
+      document.getElementById('modal-device-settings').classList.remove('hidden');
+      document.getElementById('modal-device-settings').classList.add('flex');
+    }
+    function closeDeviceSettingsModal() {
+      document.getElementById('modal-device-settings').classList.add('hidden');
+      document.getElementById('modal-device-settings').classList.remove('flex');
+    }
+    function saveDeviceSettings() {
+      appState.deviceName = document.getElementById('edit-dev-name').value.trim();
+      appState.deviceModel = document.getElementById('edit-dev-model').value;
+      appState.deviceLocation = document.getElementById('edit-dev-location').value.trim();
+      appState.deviceId = document.getElementById('edit-dev-id').value.trim();
+
+      localStorage.setItem('clynk_dev_name', appState.deviceName);
+      localStorage.setItem('clynk_dev_model', appState.deviceModel);
+      localStorage.setItem('clynk_dev_location', appState.deviceLocation);
+      localStorage.setItem('clynk_dev_id', appState.deviceId);
+
+      applyHeaderInfo();
+      updateFirmwareCodeBlock();
+      closeDeviceSettingsModal();
+      setStreamMode(appState.streamMode);
+    }
+
+    function addTagPrompt() {
+      const tag = prompt('Enter tag name (e.g. Sector-4, GreenHouse):');
+      if (tag) {
+        appState.deviceLocation += ` • ${tag}`;
+        document.getElementById('device-location').innerText = appState.deviceLocation;
       }
     }
 
-    function toggleRelay(pin) {
-      const next = (Number(state.pins[pin]) || 0) > 0 ? 0 : 1;
-      state.pins[pin] = next;
-      updateDashboardUI(pin);
-      fetch('/api/blynk/update?pin=' + pin + '&value=' + next).catch(() => {});
-    }
-
-    function sendQuickPinWrite() {
-      const pin = document.getElementById('quick-pin-select').value;
-      const raw = document.getElementById('quick-pin-value').value.trim();
-      if (!raw) return;
-      state.pins[pin] = raw;
-      updateDashboardUI(pin);
-      fetch('/api/blynk/update?pin=' + pin + '&value=' + encodeURIComponent(raw)).catch(() => {});
-      document.getElementById('quick-pin-value').value = '';
-    }
-
-    function logTerminal(msg, color = 'slate') {
-      const term = document.getElementById('terminal-log');
-      if (!term) return;
-      const div = document.createElement('div');
-      div.className = (color === 'emerald') ? 'text-emerald-400 font-semibold' : (color === 'red') ? 'text-red-400' : 'text-slate-300';
-      div.innerText = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-      term.appendChild(div);
-      term.scrollTop = term.scrollHeight;
-    }
-
-    function clearTerminalLogs() {
-      document.getElementById('terminal-log').innerHTML = '<div class="text-slate-500">[TERMINAL] Logs cleared.</div>';
-    }
-
-    function toggleStreamPause() {
-      state.isPaused = !state.isPaused;
-      document.getElementById('text-pause-stream').innerText = state.isPaused ? 'Resume' : 'Pause';
-    }
-
-    function clearStreamData() {
-      if (telemetryChart) {
-        telemetryChart.data.labels = [];
-        telemetryChart.data.datasets[0].data = [];
-        telemetryChart.data.datasets[1].data = [];
-        telemetryChart.update();
+    function editDatastreamPrompt(pin) {
+      const ds = appState.datastreams.find(d => d.pin === pin);
+      if (!ds) return;
+      const newName = prompt(`Enter new name for Datastream ${pin}:`, ds.name);
+      if (newName) {
+        ds.name = newName;
+        localStorage.setItem('clynk_datastreams', JSON.stringify(appState.datastreams));
+        renderDatastreamsTable();
       }
     }
 
-    function exportStreamCSV() {
-      if (!telemetryChart || !telemetryChart.data.labels.length) return alert('No data to export!');
-      let csv = 'Timestamp,Temperature_C,Humidity_Percent\\n';
-      for (let i = 0; i < telemetryChart.data.labels.length; i++) {
-        csv += '"' + telemetryChart.data.labels[i] + '",' + (telemetryChart.data.datasets[0].data[i] || '') + ',' + (telemetryChart.data.datasets[1].data[i] || '') + '\\n';
-      }
+    function saveCurrentTemplate() {
+      const template = {
+        name: appState.deviceName,
+        model: appState.deviceModel,
+        datastreams: appState.datastreams,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem('clynk_template_saved', JSON.stringify(template));
+      alert('✅ Template saved successfully! Your layout, device model, and datastreams configuration are stored.');
+    }
+
+    // --- Firmware Code Generator ---
+    function updateFirmwareCodeBlock() {
+      const code = `#include <WiFi.h>
+#include <PubSubClient.h>
+
+// --- Configuration ---
+const char* ssid        = "YOUR_WIFI_SSID";
+const char* password    = "YOUR_WIFI_PASSWORD";
+const char* mqtt_server = "broker.emqx.io";
+const int   mqtt_port   = 1883;
+const char* device_id   = "${appState.deviceId}"; // ${appState.deviceName}
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(2, OUTPUT); // Builtin LED / Pump Relay (V3)
+  
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  Serial.println("\\nWiFi connected! IP: " + WiFi.localIP().toString());
+
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  String msg = "";
+  for (int i = 0; i < length; i++) msg += (char)payload[i];
+  Serial.printf("Command [%s]: %s\\n", topic, msg.c_str());
+
+  if (String(topic).endsWith("/V3")) { // Water pump
+    digitalWrite(2, msg.toInt() ? HIGH : LOW);
+  }
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    String clientId = "ESP32-${appState.deviceId}-" + String(random(0xffff), HEX);
+    if (client.connect(clientId.c_str())) {
+      Serial.println("Connected to Blynk.Console MQTT Stream!");
+      client.subscribe("clynk/${appState.deviceId}/#");
+    } else {
+      delay(2000);
+    }
+  }
+}
+
+void loop() {
+  if (!client.connected()) reconnect();
+  client.loop();
+
+  static unsigned long lastTime = 0;
+  if (millis() - lastTime > 1000) { // Stream every 1 second
+    lastTime = millis();
+
+    // Read real sensors or use values
+    float temp = 28.0 + (random(0, 30) / 10.0); // V0: Temperature
+    float hum  = 88.0 + (random(0, 40) / 10.0); // V1: Humidity
+    float soil = 45.0 + (random(0, 30) / 10.0); // V6: Soil Moisture
+
+    String base = "clynk/${appState.deviceId}/";
+    client.publish((base + "V0").c_str(), String(temp, 1).c_str());
+    client.publish((base + "V1").c_str(), String(hum, 1).c_str());
+    client.publish((base + "V6").c_str(), String(soil, 1).c_str());
+
+    Serial.printf("Streamed: Temp=%.1f C | Hum=%.1f %% | Soil=%.1f %%\\n", temp, hum, soil);
+  }
+}`;
+      const block = document.getElementById('firmware-code-block');
+      if (block) block.innerText = code;
+    }
+
+    function copyFirmwareCode() {
+      const code = document.getElementById('firmware-code-block').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copy-btn-text');
+        btn.innerText = 'Copied! ✓';
+        setTimeout(() => btn.innerText = 'Copy Code', 2000);
+      });
+    }
+
+    function setTimeFilter(filter) {
+      appState.timeFilter = filter;
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('tbtn-' + filter);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    function exportCSVData() {
+      let csv = 'Timestamp,Pin_V0_Temp,Pin_V1_Humidity,Pin_V6_SoilMoisture\\n';
+      const now = new Date().toISOString();
+      csv += \`"\${now}",\${appState.pins.V0},\${appState.pins.V1},\${appState.pins.V6}\\n\`;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      a.download = 'clynk_telemetry.csv';
+      a.download = \`blynk_datalog_\${Date.now()}.csv\`;
       a.click();
-    }
-
-    function openFirmwareModal() { document.getElementById('firmware-modal').classList.remove('hidden'); document.getElementById('firmware-modal').classList.add('flex'); }
-    function closeFirmwareModal() { document.getElementById('firmware-modal').classList.add('hidden'); document.getElementById('firmware-modal').classList.remove('flex'); }
-    function copyFirmwareCode() {
-      navigator.clipboard.writeText(document.getElementById('esp32-code-box').innerText).then(() => {
-        document.getElementById('copy-code-text').innerText = 'Copied! ✓';
-        setTimeout(() => document.getElementById('copy-code-text').innerText = 'Copy Code', 2000);
-      });
     }
   </script>
 </body>
@@ -839,38 +1072,28 @@ app.all(['/api/blynk/get', '/blynk/get'], (req, res) => {
   return res.send(String(val));
 });
 
-// --- API Route 3: /api/pins (Returns all pins as JSON) ---
+// --- API Route 3: /api/pins (All pins JSON) ---
 app.get('/api/pins', (req, res) => {
   const pinsObj = Object.fromEntries(pinStore);
   return res.json({ success: true, pins: pinsObj });
 });
 
-// --- API Route 4: /api/ai/query ---
-app.all('/api/ai/query', (req, res) => {
-  return res.json({
-    title: 'Telemetry Trend',
-    insights: `📊 Telemetry nominal. V0: ${pinStore.get('V0')}°C, V1: ${pinStore.get('V1')}%.`,
-    actions: [],
-    data: []
-  });
-});
-
-// --- API Route 5: Health Check ---
+// --- API Route 4: Health Check ---
 app.get('/api/health', (req, res) => {
   return res.json({ status: 'ok', uptime: process.uptime() });
 });
 
-// --- Root Route: Serve Embedded Standalone Dashboard HTML directly ---
+// --- Root Route: Serve Embedded Authentic Blynk 2.0 Console HTML ---
 app.get('*', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(DASHBOARD_HTML);
 });
 
-// If run directly (node server.js), start listening on port 3000
+// Local dev server listener
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log(`🚀 Clynk Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Blynk.Console Server running on http://localhost:${PORT}`);
   });
 }
 
