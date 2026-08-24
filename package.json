@@ -1,11 +1,5 @@
 {
   "name": "clynk",
   "version": "1.0.0",
-  "description": "Next-Gen AI IoT Telemetry & Control Platform (Blynk Alternative)",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  }
+  "private": true
 }
