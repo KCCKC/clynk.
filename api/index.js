@@ -1,9 +1,39 @@
-// In-Memory State
+// In-Memory Cloud State
 const pinStore = new Map([
-  ['V0', '24.8'], ['V1', '58.5'], ['V2', '0'],
-  ['V3', '128'], ['V4', '3.82'], ['V5', '#06B6D4'], ['V6', '1013.2']
+  ['V0', '24.8'],
+  ['V1', '58.5'],
+  ['V2', '0'],
+  ['V3', '128'],
+  ['V4', '3.82'],
+  ['V5', '#06B6D4'],
+  ['V6', '1013.2']
 ]);
-const telemetryHistory = { 'V0': [], 'V1': [], 'V4': [] };
+
+const telemetryHistory = {
+  'V0': [],
+  'V1': [],
+  'V4': []
+};
+
+// Seed initial history
+const now = Date.now();
+for (let i = 20; i >= 0; i--) {
+  const t = now - i * 5000;
+  telemetryHistory['V0'].push({ timestamp: t, value: +(24.5 + Math.sin(i / 3) * 1.5).toFixed(1) });
+  telemetryHistory['V1'].push({ timestamp: t, value: +(58.0 + Math.cos(i / 2) * 4.0).toFixed(1) });
+  telemetryHistory['V4'].push({ timestamp: t, value: +(3.82 + (Math.random() * 0.04 - 0.02)).toFixed(2) });
+}
+
+function updatePinState(pin, value) {
+  const p = pin.toUpperCase();
+  const valStr = String(value);
+  pinStore.set(p, valStr);
+
+  const num = parseFloat(valStr);
+  if (!telemetryHistory[p]) telemetryHistory[p] = [];
+  telemetryHistory[p].push({ timestamp: Date.now(), value: isNaN(num) ? 0 : num });
+  if (telemetryHistory[p].length > 150) telemetryHistory[p].shift();
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,8 +51,13 @@ export default async function handler(req, res) {
   const searchParams = Object.fromEntries(urlObj.searchParams.entries());
 
   let body = {};
-  if (req.body) {
-    body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body;
+  if (req.method === 'POST') {
+    try {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      const rawBody = Buffer.concat(chunks).toString();
+      if (rawBody) body = JSON.parse(rawBody);
+    } catch (e) {}
   }
 
   const params = { ...searchParams, ...body };
@@ -31,25 +66,35 @@ export default async function handler(req, res) {
   if (pathname.includes('/api/blynk/update') || pathname.includes('/update')) {
     const token = params.token || 'demo_token';
     const updated = {};
+
     if (params.pin && params.value !== undefined) {
-      pinStore.set(params.pin.toUpperCase(), String(params.value));
+      updatePinState(params.pin, params.value);
       updated[params.pin.toUpperCase()] = params.value;
     }
+
     for (const [k, v] of Object.entries(params)) {
       if (/^[vVaAdD]\d+$/i.test(k)) {
-        pinStore.set(k.toUpperCase(), String(v));
+        updatePinState(k, v);
         updated[k.toUpperCase()] = v;
       }
     }
+
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
-    return res.end(JSON.stringify({ success: true, status: 'ok', token, updated, timestamp: Date.now() }));
+    return res.end(JSON.stringify({
+      success: true,
+      status: 'ok',
+      token,
+      updated,
+      timestamp: Date.now()
+    }));
   }
 
   // 2. API: /api/blynk/get
   if (pathname.includes('/api/blynk/get') || pathname.includes('/get')) {
     const pin = (params.pin || 'V0').toUpperCase();
     const value = pinStore.get(pin) ?? '0';
+
     if (params.format === 'json') {
       res.setHeader('Content-Type', 'application/json');
       return res.end(JSON.stringify({ success: true, pin, value, timestamp: Date.now() }));
@@ -63,8 +108,14 @@ export default async function handler(req, res) {
     const pin = (params.pin || 'V0').toUpperCase();
     const limit = parseInt(params.limit, 10) || 50;
     const hist = (telemetryHistory[pin] || []).slice(-limit);
+
     res.setHeader('Content-Type', 'application/json');
-    return res.end(JSON.stringify({ success: true, pin, count: hist.length, data: hist }));
+    return res.end(JSON.stringify({
+      success: true,
+      pin,
+      count: hist.length,
+      data: hist
+    }));
   }
 
   // 4. API: /api/ai/query
@@ -76,8 +127,12 @@ export default async function handler(req, res) {
 
     let actions = [];
     if (prompt.includes('turn on relay') || prompt.includes('relay on')) {
-      pinStore.set('V2', '1');
+      updatePinState('V2', '1');
       actions.push({ pin: 'V2', value: '1', label: 'Relay 1 ON' });
+    }
+    if (prompt.includes('turn off relay') || prompt.includes('relay off')) {
+      updatePinState('V2', '0');
+      actions.push({ pin: 'V2', value: '0', label: 'Relay 1 OFF' });
     }
 
     const dataPoints = [];
