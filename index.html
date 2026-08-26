@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Clynk.Console • IoT Farming System</title>
+  <title>Clynk.Console • Fully Customizable IoT Datastreams</title>
   
   <!-- PWA & Mobile Web App Meta -->
   <meta name="theme-color" content="#00c282">
@@ -124,7 +124,7 @@
   <!-- TOP APP BAR -->
   <header class="bg-white dark:bg-[#0e1422] border-b border-slate-200 dark:border-white/10 px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
     <div class="flex items-center space-x-4">
-      <!-- Clynk Logo Mark ("C" with Blynk Emerald Aesthetic) -->
+      <!-- Clynk Logo Mark ("C") -->
       <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00e699] to-[#00a36d] flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-emerald-500/20 select-none">
         C
       </div>
@@ -140,7 +140,7 @@
     <!-- Mode Selector -->
     <div class="flex items-center space-x-2">
       <div class="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg text-[11px] font-semibold border border-slate-200 dark:border-white/5">
-        <button onclick="setStreamMode('mqtt')" id="mode-btn-mqtt" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition">MQTT Stream</button>
+        <button onclick="setStreamMode('mqtt')" id="mode-btn-mqtt" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition font-bold flex items-center space-x-1">MQTT Stream</button>
         <button onclick="setStreamMode('serial')" id="mode-btn-serial" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition flex items-center space-x-1"><i data-lucide="usb" class="w-3 h-3"></i><span>USB Serial</span></button>
         <button onclick="setStreamMode('http')" id="mode-btn-http" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">HTTP</button>
         <button onclick="setStreamMode('sim')" id="mode-btn-sim" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">Sim</button>
@@ -199,9 +199,13 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center space-x-2 pb-2 md:pb-0">
+        <button onclick="openNewDatastreamModal()" class="px-3.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 text-xs font-bold flex items-center space-x-1.5 transition">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>+ Add Pin</span>
+        </button>
         <button onclick="openAutomationsModal()" class="px-3.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 text-xs font-bold flex items-center space-x-1.5 transition">
           <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-          <span>Automations (2)</span>
+          <span>Automations</span>
         </button>
         <button onclick="saveCurrentTemplate()" class="px-3.5 py-1.5 rounded-lg bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
           <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
@@ -210,7 +214,7 @@
       </div>
     </div>
 
-    <!-- BLYNK MAIN NAVIGATION TABS -->
+    <!-- TABS -->
     <div class="max-w-7xl mx-auto flex items-center space-x-8 mt-5 border-t border-slate-100 dark:border-white/5 overflow-x-auto text-xs font-medium">
       <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="blynk-tab active py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
         <i data-lucide="layout-grid" class="w-4 h-4"></i>
@@ -252,8 +256,6 @@
         </div>
 
         <div class="flex items-center space-x-2 text-slate-500 text-xs font-mono">
-          <span>Auto-Triggers: <b class="text-emerald-500">ACTIVE</b></span>
-          <span>•</span>
           <span>Rate: <b id="packet-rate-hz" class="text-emerald-500">1.0</b> Hz</span>
           <span>•</span>
           <button onclick="exportCSVData()" class="hover:text-emerald-600 flex items-center space-x-1 font-sans font-semibold">
@@ -263,150 +265,9 @@
         </div>
       </div>
 
-      <!-- MAIN WIDGET GRID (Paired Gauges & Charts) -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        
-        <!-- TEMPERATURE (V0) GAUGE -->
-        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">TEMPERATURE (V0)</span>
-            <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">STREAMING</span>
-          </div>
-          <div class="relative flex items-center justify-center my-3">
-            <svg class="w-40 h-40" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
-              <circle id="gauge-arc-v0" cx="50" cy="50" r="40" fill="none" stroke="#facc15" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="99" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
-            </svg>
-            <div class="absolute text-center">
-              <span id="gauge-val-v0" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">28.3</span>
-              <span class="text-sm font-semibold text-slate-400">°C</span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
-            <span>0 °C</span>
-            <span>Max 60 °C</span>
-          </div>
-        </div>
-
-        <!-- TEMPERATURE CHART -->
-        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between pb-2">
-            <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Temperature Chart</span>
-            </div>
-            <span class="text-xs text-slate-400 font-mono">PIN V0 • Live Telemetry</span>
-          </div>
-          <div class="relative h-44 w-full">
-            <canvas id="chart-v0"></canvas>
-          </div>
-        </div>
-
-        <!-- HUMIDITY (V1) GAUGE -->
-        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">HUMIDITY (V1)</span>
-            <span class="text-[10px] font-mono text-blue-500 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded font-bold">OPTIMAL</span>
-          </div>
-          <div class="relative flex items-center justify-center my-3">
-            <svg class="w-40 h-40" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
-              <circle id="gauge-arc-v1" cx="50" cy="50" r="40" fill="none" stroke="#0284c7" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="20" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
-            </svg>
-            <div class="absolute text-center">
-              <span id="gauge-val-v1" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">89</span>
-              <span class="text-sm font-semibold text-slate-400">%</span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
-            <span>0 %</span>
-            <span>Max 100 %</span>
-          </div>
-        </div>
-
-        <!-- HUMIDITY CHART -->
-        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between pb-2">
-            <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Humidity Chart</span>
-            </div>
-            <span class="text-xs text-slate-400 font-mono">PIN V1 • Live Telemetry</span>
-          </div>
-          <div class="relative h-44 w-full">
-            <canvas id="chart-v1"></canvas>
-          </div>
-        </div>
-
-        <!-- SOIL MOISTURE (V6) GAUGE -->
-        <div class="xl:col-span-4 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">SOIL MOISTURE (V6)</span>
-            <span id="soil-badge" class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">NORMAL</span>
-          </div>
-          <div class="relative flex items-center justify-center my-3">
-            <svg class="w-40 h-40" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
-              <circle id="gauge-arc-v6" cx="50" cy="50" r="40" fill="none" stroke="#00c282" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="102" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
-            </svg>
-            <div class="absolute text-center">
-              <span id="gauge-val-v6" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">46</span>
-              <span class="text-sm font-semibold text-slate-400">%</span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
-            <span>0 %</span>
-            <span>Max 100 %</span>
-          </div>
-        </div>
-
-        <!-- SOIL MOISTURE CHART -->
-        <div class="xl:col-span-8 blynk-card p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between pb-2">
-            <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#00c282]"></span>
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Soil Moisture Chart</span>
-            </div>
-            <span class="text-xs text-slate-400 font-mono">PIN V6 • Live Telemetry</span>
-          </div>
-          <div class="relative h-44 w-full">
-            <canvas id="chart-v6"></canvas>
-          </div>
-        </div>
-
-        <!-- ACTUATORS (V3 Water Pump & V2 Alarm Siren) -->
-        <div class="xl:col-span-6 blynk-card p-5 flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div id="pump-icon-box" class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center">
-              <i data-lucide="waves" class="w-7 h-7"></i>
-            </div>
-            <div>
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ACTUATOR • PIN V3</span>
-              <h3 class="text-base font-extrabold text-slate-800 dark:text-white">Water Pump</h3>
-              <p id="pump-status-label" class="text-xs font-semibold text-emerald-600 mt-0.5">STATUS: RUNNING (1)</p>
-            </div>
-          </div>
-          <button onclick="toggleActuator('V3')" id="btn-toggle-v3" class="px-5 py-2.5 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold shadow-md transition">
-            SWITCH OFF
-          </button>
-        </div>
-
-        <div class="xl:col-span-6 blynk-card p-5 flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div id="alarm-icon-box" class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center">
-              <i data-lucide="bell" class="w-7 h-7"></i>
-            </div>
-            <div>
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ALERT SYSTEM • PIN V2</span>
-              <h3 class="text-base font-extrabold text-slate-800 dark:text-white">System Siren / Alarm</h3>
-              <p id="alarm-status-label" class="text-xs font-semibold text-slate-400 mt-0.5">STATUS: IDLE (0)</p>
-            </div>
-          </div>
-          <button onclick="toggleActuator('V2')" id="btn-toggle-v2" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition">
-            ACTIVATE
-          </button>
-        </div>
-
+      <!-- DYNAMIC WIDGET GRID (Rendered 100% dynamically based on configured datastreams!) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5" id="dynamic-widget-grid">
+        <!-- Dynamically rendered widgets for V0-V15 -->
       </div>
     </div>
 
@@ -415,8 +276,12 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-lg font-bold text-slate-900 dark:text-white">Virtual Datastreams Manager</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Configure pins, units, and boundaries just like Blynk Console</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Configure virtual ports, custom names, double/float types, units, and boundaries</p>
         </div>
+        <button onclick="openNewDatastreamModal()" class="px-4 py-2 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Add Custom Port</span>
+        </button>
       </div>
 
       <div class="blynk-card overflow-hidden">
@@ -428,6 +293,7 @@
               <th class="p-3.5">Data Type</th>
               <th class="p-3.5">Unit</th>
               <th class="p-3.5">Min - Max</th>
+              <th class="p-3.5">Decimals</th>
               <th class="p-3.5">Current Value</th>
               <th class="p-3.5 text-right pr-5">Actions</th>
             </tr>
@@ -466,7 +332,7 @@
           <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-2">Hardware Specification</h3>
           <div class="space-y-3 text-xs">
             <div class="flex justify-between"><span class="text-slate-500">Device Model:</span><span id="info-model" class="font-bold text-slate-800 dark:text-white">ESP32 DevKit V1</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Firmware Build:</span><span class="font-mono text-emerald-600">v2.5.0-clynk-pwa</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Firmware Build:</span><span class="font-mono text-emerald-600">v2.6.0-clynk-custom-ports</span></div>
             <div class="flex justify-between"><span class="text-slate-500">Connection Protocol:</span><span id="info-protocol" class="font-semibold text-slate-800 dark:text-white">MQTT over WSS (1.0 Hz)</span></div>
             <div class="flex justify-between"><span class="text-slate-500">MAC Address:</span><span class="font-mono text-slate-600 dark:text-slate-400">24:6F:28:B4:7E:9C</span></div>
             <div class="flex justify-between"><span class="text-slate-500">Auth Token / Device ID:</span><span id="info-devid" class="font-mono text-slate-800 dark:text-slate-200">device1</span></div>
@@ -485,17 +351,16 @@
       </div>
     </div>
 
-    <!-- TAB 5: ESP32 FIRMWARE VIEW (With WiFiManager Captive Portal Toggle) -->
+    <!-- TAB 5: ESP32 FIRMWARE VIEW -->
     <div id="view-firmware" class="hidden space-y-5">
       <div class="blynk-card p-6 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 class="text-base font-bold text-slate-900 dark:text-white">Generated Arduino C++ Sketch</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Flash to your ESP32 to stream telemetry and receive actuator commands</p>
+            <p class="text-xs text-slate-500 mt-0.5">Auto-generated sketch streaming all configured virtual datastreams</p>
           </div>
           
           <div class="flex items-center space-x-2">
-            <!-- Firmware Type Switcher -->
             <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
               <button onclick="setFirmwareType('standard')" id="fw-btn-standard" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white">Standard Wi-Fi</button>
               <button onclick="setFirmwareType('wifimanager')" id="fw-btn-wifimanager" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300">Wi-Fi Captive Portal</button>
@@ -514,7 +379,141 @@
 
   </main>
 
-  <!-- MODAL: AUTOMATIONS & TRIGGER RULES (Blynk Automation Engine) -->
+  <!-- MODAL: DATASTREAM CREATOR & EDITOR (Blynk.Console Style) -->
+  <div id="modal-datastream-editor" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-[#00c282]"></i>
+          <span id="ds-modal-title">Edit Virtual Datastream</span>
+        </h3>
+        <button onclick="closeDatastreamModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="ds-edit-orig-pin">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Virtual Pin / Port</label>
+          <select id="ds-pin-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono font-bold focus:border-[#00c282]">
+            <option value="V0">V0</option>
+            <option value="V1">V1</option>
+            <option value="V2">V2</option>
+            <option value="V3">V3</option>
+            <option value="V4">V4</option>
+            <option value="V5">V5</option>
+            <option value="V6">V6</option>
+            <option value="V7">V7</option>
+            <option value="V8">V8</option>
+            <option value="V9">V9</option>
+            <option value="V10">V10</option>
+            <option value="V11">V11</option>
+            <option value="V12">V12</option>
+            <option value="V13">V13</option>
+            <option value="V14">V14</option>
+            <option value="V15">V15</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Type</label>
+          <select id="ds-type-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
+            <option value="Double">Double (Decimal Floating Point)</option>
+            <option value="Integer">Integer (Whole Number)</option>
+            <option value="Boolean">Boolean (ON / OFF Actuator)</option>
+            <option value="String">String / Text</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Datastream Name</label>
+          <input type="text" id="ds-name-input" placeholder="e.g. CO2 Level, Soil Moisture, pH Sensor" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Unit of Measurement</label>
+          <input type="text" id="ds-unit-input" list="unit-presets" placeholder="e.g. °C, %, ppm, lux, V, bar" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+          <datalist id="unit-presets">
+            <option value="°C"></option>
+            <option value="°F"></option>
+            <option value="%"></option>
+            <option value="ppm"></option>
+            <option value="pH"></option>
+            <option value="lux"></option>
+            <option value="V"></option>
+            <option value="mV"></option>
+            <option value="mA"></option>
+            <option value="A"></option>
+            <option value="W"></option>
+            <option value="kWh"></option>
+            <option value="bar"></option>
+            <option value="psi"></option>
+            <option value="hPa"></option>
+            <option value="L/min"></option>
+            <option value="m/s"></option>
+            <option value="state"></option>
+          </datalist>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Decimals Precision</label>
+          <select id="ds-decimals-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:border-[#00c282]">
+            <option value="0">0 (e.g. 100)</option>
+            <option value="1" selected>1 (e.g. 28.3)</option>
+            <option value="2">2 (e.g. 3.82)</option>
+            <option value="3">3 (e.g. 0.125)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Min Boundary</label>
+          <input type="number" id="ds-min-input" value="0" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Max Boundary</label>
+          <input type="number" id="ds-max-input" value="100" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Color Theme</label>
+          <select id="ds-color-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
+            <option value="#facc15">Yellow (Warm)</option>
+            <option value="#0284c7">Sky Blue (Hydro)</option>
+            <option value="#00c282" selected>Emerald Green (Flora)</option>
+            <option value="#a855f7">Purple (Soil / Nutrient)</option>
+            <option value="#f97316">Orange (Thermal)</option>
+            <option value="#ef4444">Red (Alert)</option>
+            <option value="#06b6d4">Cyan (Atmosphere)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Widget Style</label>
+          <select id="ds-widget-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
+            <option value="gauge-chart" selected>Gauge + Live Chart (Paired)</option>
+            <option value="actuator">Relay / Switch Actuator</option>
+            <option value="metric">Digital Metric Card</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+        <button onclick="deleteDatastream()" id="ds-delete-btn" class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center space-x-1">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Delete Pin</span>
+        </button>
+        <div class="flex items-center space-x-2">
+          <button onclick="closeDatastreamModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs">Cancel</button>
+          <button onclick="saveDatastreamForm()" class="px-4 py-2 rounded-lg bg-[#00c282] text-white font-bold text-xs hover:bg-[#00a36d]">Save Datastream</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUTOMATIONS -->
   <div id="modal-automations" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
@@ -528,7 +527,7 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <!-- Rule 1: Auto Irrigation -->
+        <!-- Rule 1 -->
         <div class="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-bold text-emerald-700 dark:text-emerald-400">💧 Auto-Irrigation Trigger</span>
@@ -543,7 +542,7 @@
           </p>
         </div>
 
-        <!-- Rule 2: High Temp Siren -->
+        <!-- Rule 2 -->
         <div class="p-3.5 rounded-xl border border-red-200 dark:border-red-800/40 bg-red-50/50 dark:bg-red-950/20 space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-bold text-red-700 dark:text-red-400">🚨 Greenhouse Heat Alert</span>
@@ -554,7 +553,7 @@
           </div>
           <p class="text-slate-600 dark:text-slate-300 text-[11px]">
             IF <b>Temperature (V0)</b> &gt; <input type="number" id="auto-temp-thresh" value="35" class="w-12 px-1 py-0.5 border rounded font-mono text-center bg-white dark:bg-slate-800"> °C
-            THEN Trigger <b>Alarm Siren (V2)</b> and audio notification.
+            THEN Trigger <b>Alarm Siren (V2)</b> and notification.
           </p>
         </div>
       </div>
@@ -626,13 +625,13 @@
       pollInterval: null,
       packetCount: 0,
       datastreams: JSON.parse(localStorage.getItem('clynk_datastreams') || JSON.stringify([
-        { pin: 'V0', name: 'Temperature', type: 'Double', unit: '°C', min: 0, max: 60, color: '#facc15' },
-        { pin: 'V1', name: 'Humidity', type: 'Double', unit: '%', min: 0, max: 100, color: '#0284c7' },
-        { pin: 'V2', name: 'Alarm Siren', type: 'Integer', unit: 'state', min: 0, max: 1, color: '#ef4444' },
-        { pin: 'V3', name: 'Water Pump', type: 'Integer', unit: 'state', min: 0, max: 1, color: '#00c282' },
-        { pin: 'V4', name: 'ESP32 Voltage', type: 'Double', unit: 'V', min: 0, max: 5, color: '#10b981' },
-        { pin: 'V6', name: 'Soil Moisture', type: 'Double', unit: '%', min: 0, max: 100, color: '#00c282' },
-        { pin: 'V7', name: 'Solar Light Lux', type: 'Integer', unit: 'lux', min: 0, max: 1000, color: '#f59e0b' }
+        { pin: 'V0', name: 'Temperature', type: 'Double', unit: '°C', min: 0, max: 60, decimals: 1, color: '#facc15', widgetType: 'gauge-chart' },
+        { pin: 'V1', name: 'Humidity', type: 'Double', unit: '%', min: 0, max: 100, decimals: 0, color: '#0284c7', widgetType: 'gauge-chart' },
+        { pin: 'V6', name: 'Soil Moisture', type: 'Double', unit: '%', min: 0, max: 100, decimals: 0, color: '#00c282', widgetType: 'gauge-chart' },
+        { pin: 'V3', name: 'Water Pump', type: 'Boolean', unit: 'state', min: 0, max: 1, decimals: 0, color: '#00c282', widgetType: 'actuator' },
+        { pin: 'V2', name: 'Alarm Siren', type: 'Boolean', unit: 'state', min: 0, max: 1, decimals: 0, color: '#ef4444', widgetType: 'actuator' },
+        { pin: 'V4', name: 'ESP32 Voltage', type: 'Double', unit: 'V', min: 0, max: 5, decimals: 2, color: '#10b981', widgetType: 'metric' },
+        { pin: 'V7', name: 'Solar Light Lux', type: 'Integer', unit: 'lux', min: 0, max: 1000, decimals: 0, color: '#f59e0b', widgetType: 'metric' }
       ])),
       pins: {
         V0: 28.3, V1: 89.0, V2: 0, V3: 1, V4: 3.82, V5: 0, V6: 46.0, V7: 340
@@ -642,10 +641,9 @@
     const charts = {};
 
     window.addEventListener('DOMContentLoaded', function() {
-      lucide.createIcons();
       applyHeaderInfo();
+      renderAllWidgets();
       renderDatastreamsTable();
-      initAllCharts();
       updateFirmwareCodeBlock();
       startMQTTStream();
 
@@ -676,6 +674,202 @@
       lucide.createIcons();
     }
 
+    // --- Dynamic Widget Grid Builder (100% Customizable Ports!) ---
+    function renderAllWidgets() {
+      var grid = document.getElementById('dynamic-widget-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      // Destroy old charts before rebuilding
+      for (var k in charts) {
+        if (charts[k]) charts[k].destroy();
+        delete charts[k];
+      }
+
+      appState.datastreams.forEach(function(ds) {
+        var currentVal = appState.pins[ds.pin] !== undefined ? appState.pins[ds.pin] : ds.min;
+        var displayVal = (typeof currentVal === 'number') ? currentVal.toFixed(ds.decimals) : currentVal;
+
+        if (ds.widgetType === 'gauge-chart') {
+          // Paired Gauge & Chart Card
+          var percent = Math.min(1, Math.max(0, (Number(currentVal) - ds.min) / (ds.max - ds.min || 1)));
+          var offset = 188.5 - (percent * 188.5);
+
+          var gaugeCol = document.createElement('div');
+          gaugeCol.className = 'xl:col-span-4 blynk-card p-5 flex flex-col justify-between';
+          gaugeCol.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">${ds.name} (${ds.pin})</span>
+              <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">${ds.type.toUpperCase()}</span>
+            </div>
+            <div class="relative flex items-center justify-center my-3">
+              <svg class="w-40 h-40" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle id="gauge-arc-${ds.pin.toLowerCase()}" cx="50" cy="50" r="40" fill="none" stroke="${ds.color}" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
+              </svg>
+              <div class="absolute text-center">
+                <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">${displayVal}</span>
+                <span class="text-sm font-semibold text-slate-400">${ds.unit}</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
+              <span>${ds.min} ${ds.unit}</span>
+              <span>Max ${ds.max} ${ds.unit}</span>
+            </div>
+          `;
+
+          var chartCol = document.createElement('div');
+          chartCol.className = 'xl:col-span-8 blynk-card p-5 flex flex-col justify-between';
+          chartCol.innerHTML = `
+            <div class="flex items-center justify-between pb-2">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">${ds.name} Chart</span>
+              </div>
+              <span class="text-xs text-slate-400 font-mono">PIN ${ds.pin} • [${ds.min}..${ds.max} ${ds.unit}]</span>
+            </div>
+            <div class="relative h-44 w-full">
+              <canvas id="chart-${ds.pin.toLowerCase()}"></canvas>
+            </div>
+          `;
+
+          grid.appendChild(gaugeCol);
+          grid.appendChild(chartCol);
+
+        } else if (ds.widgetType === 'actuator') {
+          // Actuator / Relay Switch Card
+          var active = Number(currentVal) > 0;
+          var actCard = document.createElement('div');
+          actCard.className = 'xl:col-span-6 blynk-card p-5 flex items-center justify-between';
+          actCard.innerHTML = `
+            <div class="flex items-center space-x-4">
+              <div id="act-box-${ds.pin.toLowerCase()}" class="w-14 h-14 rounded-2xl ${active ? 'bg-emerald-500/10 text-[#00c282] border border-emerald-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10'} flex items-center justify-center">
+                <i data-lucide="power" class="w-7 h-7"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ACTUATOR • PIN ${ds.pin}</span>
+                <h3 class="text-base font-extrabold text-slate-800 dark:text-white">${ds.name}</h3>
+                <p id="act-lbl-${ds.pin.toLowerCase()}" class="text-xs font-semibold ${active ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">STATUS: ${active ? 'ON (1)' : 'OFF (0)'}</p>
+              </div>
+            </div>
+            <button onclick="toggleActuator('${ds.pin}')" id="act-btn-${ds.pin.toLowerCase()}" class="px-5 py-2.5 rounded-xl ${active ? 'bg-[#00c282] hover:bg-[#00a36d] text-white' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'} text-xs font-bold shadow-md transition">
+              ${active ? 'SWITCH OFF' : 'SWITCH ON'}
+            </button>
+          `;
+          grid.appendChild(actCard);
+
+        } else {
+          // Digital Metric Card
+          var metricCard = document.createElement('div');
+          metricCard.className = 'xl:col-span-4 blynk-card p-5 flex flex-col justify-between';
+          metricCard.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">${ds.name} (${ds.pin})</span>
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}"></span>
+            </div>
+            <div class="my-3 flex items-baseline space-x-1.5">
+              <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">${displayVal}</span>
+              <span class="text-sm font-semibold text-slate-400">${ds.unit}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 font-mono flex justify-between border-t border-slate-100 dark:border-white/5 pt-2">
+              <span>Type: ${ds.type}</span>
+              <span>Range: ${ds.min} - ${ds.max}</span>
+            </div>
+          `;
+          grid.appendChild(metricCard);
+        }
+      });
+
+      lucide.createIcons();
+      initDynamicCharts();
+    }
+
+    function initDynamicCharts() {
+      var isDark = document.documentElement.classList.contains('dark');
+      var gridColor = isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9';
+      var textColor = isDark ? '#94a3b8' : '#64748b';
+
+      appState.datastreams.filter(d => d.widgetType === 'gauge-chart').forEach(function(ds) {
+        var canvas = document.getElementById('chart-' + ds.pin.toLowerCase());
+        if (!canvas) return;
+
+        var cur = appState.pins[ds.pin] !== undefined ? Number(appState.pins[ds.pin]) : ds.min;
+        charts[ds.pin] = new Chart(canvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['14:20:00', '14:20:05', '14:20:10', '14:20:15'],
+            datasets: [{
+              label: ds.name,
+              data: [cur, cur, cur, cur],
+              borderColor: ds.color,
+              backgroundColor: ds.color + '15',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.25,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } },
+              y: { min: ds.min, max: ds.max, grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } }
+            }
+          }
+        });
+      });
+    }
+
+    function updateWidgetUI(pin, val) {
+      var ds = appState.datastreams.find(d => d.pin === pin);
+      var decimals = ds ? ds.decimals : 1;
+      var formatted = (typeof val === 'number') ? val.toFixed(decimals) : val;
+
+      var valEl = document.getElementById('gauge-val-' + pin.toLowerCase());
+      if (valEl) valEl.innerText = formatted;
+
+      if (ds && ds.widgetType === 'gauge-chart') {
+        var arcEl = document.getElementById('gauge-arc-' + pin.toLowerCase());
+        if (arcEl) {
+          var percent = Math.min(1, Math.max(0, (Number(val) - ds.min) / (ds.max - ds.min || 1)));
+          var offset = 188.5 - (percent * 188.5);
+          arcEl.style.strokeDashoffset = offset;
+        }
+      }
+
+      if (ds && ds.widgetType === 'actuator') {
+        var active = Number(val) > 0;
+        var box = document.getElementById('act-box-' + pin.toLowerCase());
+        var lbl = document.getElementById('act-lbl-' + pin.toLowerCase());
+        var btn = document.getElementById('act-btn-' + pin.toLowerCase());
+        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
+        if (lbl) { lbl.innerText = 'STATUS: ' + (active ? 'ON (1)' : 'OFF (0)'); lbl.className = 'text-xs font-semibold mt-0.5 ' + (active ? 'text-emerald-600' : 'text-slate-400'); }
+        if (btn) { btn.innerText = active ? 'SWITCH OFF' : 'SWITCH ON'; btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition ' + (active ? 'bg-[#00c282] hover:bg-[#00a36d] text-white' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'); }
+      }
+
+      var ch = charts[pin];
+      if (ch) {
+        var now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (ch.data.labels.length > 25) {
+          ch.data.labels.shift();
+          ch.data.datasets[0].data.shift();
+        }
+        ch.data.labels.push(now);
+        ch.data.datasets[0].data.push(val);
+        ch.update('none');
+      }
+
+      var tableVal = document.getElementById('table-val-' + pin);
+      if (tableVal) tableVal.innerText = formatted;
+    }
+
+    // --- Stream Mode Engine ---
     function setStreamMode(mode) {
       appState.streamMode = mode;
       ['mqtt', 'serial', 'http', 'sim'].forEach(function(m) {
@@ -698,7 +892,7 @@
 
     async function startSerialStream() {
       if (!('serial' in navigator)) {
-        alert('Web Serial is supported in Chrome, Edge, and Opera! Connect your ESP32 via USB.');
+        alert('Web Serial is supported in Chrome/Edge. Connect via USB on Chrome/Edge.');
         setStreamMode('mqtt');
         return;
       }
@@ -727,7 +921,7 @@
               if (match) {
                 var p = match[1].toUpperCase();
                 var num = parseFloat(match[2]);
-                if (appState.pins.hasOwnProperty(p) && !isNaN(num)) {
+                if (!isNaN(num)) {
                   appState.packetCount++;
                   appState.pins[p] = num;
                   updateWidgetUI(p, num);
@@ -738,15 +932,12 @@
           }
         }
       } catch (err) {
-        console.error('Serial Error:', err);
         document.getElementById('status-text').innerText = 'SERIAL DISCONNECTED';
       }
     }
 
     function startMQTTStream() {
-      if (appState.mqttClient) {
-        appState.mqttClient.end(true);
-      }
+      if (appState.mqttClient) appState.mqttClient.end(true);
       try {
         var client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: 'clynk_console_' + Math.random().toString(16).slice(2, 8) });
         appState.mqttClient = client;
@@ -766,9 +957,7 @@
             checkAutomations(pin, val);
           }
         });
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     }
 
     function startHttpPolling() {
@@ -800,39 +989,33 @@
       appState.simInterval = setInterval(function() {
         appState.packetCount++;
         t += 0.1;
-        var temp = parseFloat((28.0 + Math.sin(t) * 2.5 + (Math.random() * 0.3)).toFixed(1));
-        var hum = Math.floor(88 + Math.cos(t * 0.8) * 5);
-        var soil = Math.floor(46 + Math.sin(t * 0.5) * 3);
-
-        appState.pins.V0 = temp;
-        appState.pins.V1 = hum;
-        appState.pins.V6 = soil;
-
-        updateWidgetUI('V0', temp);
-        updateWidgetUI('V1', hum);
-        updateWidgetUI('V6', soil);
-
-        checkAutomations('V0', temp);
-        checkAutomations('V6', soil);
+        
+        appState.datastreams.forEach(function(ds) {
+          if (ds.widgetType === 'gauge-chart' || ds.widgetType === 'metric') {
+            var span = ds.max - ds.min;
+            var mid = ds.min + (span / 2);
+            var simVal = parseFloat((mid + Math.sin(t * (ds.pin === 'V0' ? 1 : 0.7)) * (span * 0.3) + Math.random() * (span * 0.05)).toFixed(ds.decimals));
+            appState.pins[ds.pin] = simVal;
+            updateWidgetUI(ds.pin, simVal);
+            checkAutomations(ds.pin, simVal);
+          }
+        });
       }, 1000);
     }
 
-    // --- AUTOMATIONS & TRIGGER ENGINE (Answers Question 1!) ---
+    // --- Automations Engine ---
     function checkAutomations(pin, val) {
-      // 1. Auto Irrigation Trigger: Soil Moisture (V6) < threshold
       var pumpAutoEnabled = document.getElementById('auto-pump-enable') ? document.getElementById('auto-pump-enable').checked : true;
       var pumpThresh = document.getElementById('auto-pump-thresh') ? parseFloat(document.getElementById('auto-pump-thresh').value) : 35;
 
       if (pin === 'V6' && pumpAutoEnabled) {
         if (val < pumpThresh && appState.pins.V3 === 0) {
-          // Trigger Water Pump V3 ON
           appState.pins.V3 = 1;
           updateWidgetUI('V3', 1);
           publishActuatorCommand('V3', 1);
           logActionEvent(`💧 [AUTO-TRIGGER] Soil Moisture low (${val}% < ${pumpThresh}%). Water Pump (V3) turned ON.`, 'emerald');
           showToast('Auto-Irrigation Triggered', `Soil Moisture reached ${val}%. Pump V3 activated!`, 'emerald');
         } else if (val >= (pumpThresh + 10) && appState.pins.V3 === 1) {
-          // Turn OFF Pump once soil is saturated
           appState.pins.V3 = 0;
           updateWidgetUI('V3', 0);
           publishActuatorCommand('V3', 0);
@@ -840,7 +1023,6 @@
         }
       }
 
-      // 2. High Heat Alarm Trigger: Temp (V0) > threshold
       var alarmAutoEnabled = document.getElementById('auto-alarm-enable') ? document.getElementById('auto-alarm-enable').checked : true;
       var tempThresh = document.getElementById('auto-temp-thresh') ? parseFloat(document.getElementById('auto-temp-thresh').value) : 35;
 
@@ -853,6 +1035,14 @@
           showToast('High Temperature Alert', `Temperature is ${val}°C! Siren Alarm triggered.`, 'red');
         }
       }
+    }
+
+    function toggleActuator(pin) {
+      var next = (Number(appState.pins[pin]) || 0) > 0 ? 0 : 1;
+      appState.pins[pin] = next;
+      updateWidgetUI(pin, next);
+      publishActuatorCommand(pin, next);
+      logActionEvent(`Manual Switch: Pin ${pin} set to ${next ? 'ON (1)' : 'OFF (0)'}`, 'indigo');
     }
 
     function publishActuatorCommand(pin, state) {
@@ -870,115 +1060,117 @@
       fetch('/api/blynk/update?pin=' + pin + '&value=' + state).catch(function() {});
     }
 
-    function updateWidgetUI(pin, val) {
-      var valEl = document.getElementById('gauge-val-' + pin.toLowerCase());
-      if (valEl) valEl.innerText = val;
-
-      var arcEl = document.getElementById('gauge-arc-' + pin.toLowerCase());
-      if (arcEl) {
-        var max = 100;
-        if (pin === 'V0') max = 60;
-        var percent = Math.min(1, Math.max(0, val / max));
-        var offset = 188.5 - (percent * 188.5);
-        arcEl.style.strokeDashoffset = offset;
-      }
-
-      if (pin === 'V6') {
-        var badge = document.getElementById('soil-badge');
-        if (badge) {
-          badge.innerText = (val < 35) ? 'DRY (IRRIGATE)' : 'NORMAL';
-          badge.className = (val < 35) ? 'text-[10px] font-mono text-red-500 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded font-bold animate-pulse' : 'text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold';
+    // --- DATASTREAM MODAL HANDLERS (Custom Port Engine) ---
+    function openNewDatastreamModal() {
+      document.getElementById('ds-modal-title').innerText = 'Add Custom Virtual Datastream';
+      document.getElementById('ds-edit-orig-pin').value = '';
+      document.getElementById('ds-name-input').value = '';
+      document.getElementById('ds-unit-input').value = '';
+      document.getElementById('ds-min-input').value = '0';
+      document.getElementById('ds-max-input').value = '100';
+      document.getElementById('ds-decimals-select').value = '1';
+      document.getElementById('ds-delete-btn').classList.add('hidden');
+      
+      // Auto-select first unused pin
+      var usedPins = appState.datastreams.map(d => d.pin);
+      for (var i = 0; i < 16; i++) {
+        var p = 'V' + i;
+        if (!usedPins.includes(p)) {
+          document.getElementById('ds-pin-select').value = p;
+          break;
         }
       }
 
-      if (pin === 'V3') {
-        var active = Number(val) > 0;
-        var box = document.getElementById('pump-icon-box');
-        var lbl = document.getElementById('pump-status-label');
-        var btn = document.getElementById('btn-toggle-v3');
-        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
-        if (lbl) { lbl.innerText = active ? 'STATUS: RUNNING (1)' : 'STATUS: STOPPED (0)'; lbl.className = active ? 'text-xs font-semibold text-emerald-600 mt-0.5' : 'text-xs font-semibold text-slate-400 mt-0.5'; }
-        if (btn) { btn.innerText = active ? 'SWITCH OFF' : 'SWITCH ON'; btn.className = active ? 'px-5 py-2.5 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold shadow-md transition' : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition'; }
-      }
-
-      if (pin === 'V2') {
-        var active = Number(val) > 0;
-        var box = document.getElementById('alarm-icon-box');
-        var lbl = document.getElementById('alarm-status-label');
-        var btn = document.getElementById('btn-toggle-v2');
-        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/30 flex items-center justify-center animate-bounce' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
-        if (lbl) { lbl.innerText = active ? 'STATUS: ALARM ACTIVE (1)' : 'STATUS: IDLE (0)'; lbl.className = active ? 'text-xs font-semibold text-red-500 mt-0.5' : 'text-xs font-semibold text-slate-400 mt-0.5'; }
-        if (btn) { btn.innerText = active ? 'SILENCE' : 'ACTIVATE'; btn.className = active ? 'px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-md transition' : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold border border-slate-300 dark:border-white/10 transition'; }
-      }
-
-      var ch = charts[pin];
-      if (ch) {
-        var now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        if (ch.data.labels.length > 25) {
-          ch.data.labels.shift();
-          ch.data.datasets[0].data.shift();
-        }
-        ch.data.labels.push(now);
-        ch.data.datasets[0].data.push(val);
-        ch.update('none');
-      }
-
-      var tableVal = document.getElementById('table-val-' + pin);
-      if (tableVal) tableVal.innerText = val;
+      document.getElementById('modal-datastream-editor').classList.remove('hidden');
+      document.getElementById('modal-datastream-editor').classList.add('flex');
     }
 
-    function initAllCharts() {
-      var isDark = document.documentElement.classList.contains('dark');
-      var gridColor = isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9';
-      var textColor = isDark ? '#94a3b8' : '#64748b';
+    function openEditDatastreamModal(pin) {
+      var ds = appState.datastreams.find(d => d.pin === pin);
+      if (!ds) return;
 
-      var configs = [
-        { id: 'V0', color: '#facc15', label: 'TEMPERATURE', min: 0, max: 50, initial: [27.8, 28.0, 28.2, 28.3] },
-        { id: 'V1', color: '#0284c7', label: 'HUMIDITY', min: 0, max: 100, initial: [87, 88, 89, 89] },
-        { id: 'V6', color: '#00c282', label: 'SOIL MOISTURE', min: 0, max: 100, initial: [45, 45, 46, 46] }
-      ];
+      document.getElementById('ds-modal-title').innerText = 'Edit Datastream (' + pin + ')';
+      document.getElementById('ds-edit-orig-pin').value = pin;
+      document.getElementById('ds-pin-select').value = ds.pin;
+      document.getElementById('ds-name-input').value = ds.name;
+      document.getElementById('ds-type-select').value = ds.type;
+      document.getElementById('ds-unit-input').value = ds.unit;
+      document.getElementById('ds-min-input').value = ds.min;
+      document.getElementById('ds-max-input').value = ds.max;
+      document.getElementById('ds-decimals-select').value = ds.decimals !== undefined ? ds.decimals : 1;
+      document.getElementById('ds-color-select').value = ds.color || '#00c282';
+      document.getElementById('ds-widget-select').value = ds.widgetType || 'gauge-chart';
+      document.getElementById('ds-delete-btn').classList.remove('hidden');
 
-      configs.forEach(function(c) {
-        var ctx = document.getElementById('chart-' + c.id.toLowerCase());
-        if (!ctx) return;
-        charts[c.id] = new Chart(ctx.getContext('2d'), {
-          type: 'line',
-          data: {
-            labels: ['08:32 PM', '08:34 PM', '08:36 PM', '08:38 PM'],
-            datasets: [{
-              label: c.label,
-              data: c.initial,
-              borderColor: c.color,
-              backgroundColor: c.color + '15',
-              borderWidth: 2,
-              pointRadius: 0,
-              tension: 0.25,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { mode: 'index', intersect: false }
-            },
-            scales: {
-              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } },
-              y: { min: c.min, max: c.max, grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } }
-            }
-          }
-        });
-      });
+      document.getElementById('modal-datastream-editor').classList.remove('hidden');
+      document.getElementById('modal-datastream-editor').classList.add('flex');
     }
 
-    function toggleActuator(pin) {
-      var next = (Number(appState.pins[pin]) || 0) > 0 ? 0 : 1;
-      appState.pins[pin] = next;
-      updateWidgetUI(pin, next);
-      publishActuatorCommand(pin, next);
-      logActionEvent(`Manual Switch: Pin ${pin} set to ${next ? 'ON (1)' : 'OFF (0)'}`, 'indigo');
+    function closeDatastreamModal() {
+      document.getElementById('modal-datastream-editor').classList.add('hidden');
+      document.getElementById('modal-datastream-editor').classList.remove('flex');
+    }
+
+    function saveDatastreamForm() {
+      var origPin = document.getElementById('ds-edit-orig-pin').value;
+      var newPin = document.getElementById('ds-pin-select').value;
+      var name = document.getElementById('ds-name-input').value.trim() || ('Datastream ' + newPin);
+      var type = document.getElementById('ds-type-select').value;
+      var unit = document.getElementById('ds-unit-input').value.trim() || '';
+      var min = parseFloat(document.getElementById('ds-min-input').value) || 0;
+      var max = parseFloat(document.getElementById('ds-max-input').value) || 100;
+      var decimals = parseInt(document.getElementById('ds-decimals-select').value) || 0;
+      var color = document.getElementById('ds-color-select').value;
+      var widgetType = document.getElementById('ds-widget-select').value;
+
+      var newDsObj = {
+        pin: newPin,
+        name: name,
+        type: type,
+        unit: unit,
+        min: min,
+        max: max,
+        decimals: decimals,
+        color: color,
+        widgetType: widgetType
+      };
+
+      if (origPin) {
+        // Edit existing
+        var idx = appState.datastreams.findIndex(d => d.pin === origPin);
+        if (idx !== -1) appState.datastreams[idx] = newDsObj;
+      } else {
+        // Add new (replace if same pin exists)
+        var existingIdx = appState.datastreams.findIndex(d => d.pin === newPin);
+        if (existingIdx !== -1) appState.datastreams[existingIdx] = newDsObj;
+        else appState.datastreams.push(newDsObj);
+      }
+
+      // If pin wasn't in state, initialize it
+      if (appState.pins[newPin] === undefined) {
+        appState.pins[newPin] = min;
+      }
+
+      localStorage.setItem('clynk_datastreams', JSON.stringify(appState.datastreams));
+      closeDatastreamModal();
+      renderAllWidgets();
+      renderDatastreamsTable();
+      updateFirmwareCodeBlock();
+      showToast('Datastream Saved', `Port ${newPin} (${name}) configured successfully!`, 'emerald');
+    }
+
+    function deleteDatastream() {
+      var origPin = document.getElementById('ds-edit-orig-pin').value;
+      if (!origPin) return;
+      if (confirm('Are you sure you want to remove datastream ' + origPin + '?')) {
+        appState.datastreams = appState.datastreams.filter(d => d.pin !== origPin);
+        localStorage.setItem('clynk_datastreams', JSON.stringify(appState.datastreams));
+        closeDatastreamModal();
+        renderAllWidgets();
+        renderDatastreamsTable();
+        updateFirmwareCodeBlock();
+        showToast('Datastream Removed', `Port ${origPin} has been deleted.`, 'slate');
+      }
     }
 
     function renderDatastreamsTable() {
@@ -987,19 +1179,34 @@
       tbody.innerHTML = '';
 
       appState.datastreams.forEach(function(ds) {
+        var cur = appState.pins[ds.pin] !== undefined ? appState.pins[ds.pin] : ds.min;
+        var formatted = (typeof cur === 'number') ? cur.toFixed(ds.decimals) : cur;
+
         var tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
-        tr.innerHTML = '<td class="p-3.5 pl-5 font-bold text-[#00c282]">' + ds.pin + '</td>' +
-          '<td class="p-3.5 font-sans font-semibold text-slate-800 dark:text-slate-200">' + ds.name + '</td>' +
-          '<td class="p-3.5 text-slate-500">' + ds.type + '</td>' +
-          '<td class="p-3.5"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold">' + ds.unit + '</span></td>' +
-          '<td class="p-3.5 text-slate-500">' + ds.min + ' - ' + ds.max + '</td>' +
-          '<td class="p-3.5 font-bold text-slate-900 dark:text-white" id="table-val-' + ds.pin + '">' + (appState.pins[ds.pin] || '0') + '</td>' +
-          '<td class="p-3.5 text-right pr-5"><button onclick="editDatastreamPrompt(\'' + ds.pin + '\')" class="text-slate-400 hover:text-[#00c282] mr-2">Edit</button></td>';
+        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition cursor-pointer';
+        tr.onclick = function(e) {
+          if (e.target.tagName !== 'BUTTON') openEditDatastreamModal(ds.pin);
+        };
+        tr.innerHTML = `
+          <td class="p-3.5 pl-5 font-bold text-[#00c282]">${ds.pin}</td>
+          <td class="p-3.5 font-sans font-semibold text-slate-800 dark:text-slate-200">
+            <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style="background-color: ${ds.color}"></span>
+            ${ds.name}
+          </td>
+          <td class="p-3.5 text-slate-500">${ds.type}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold">${ds.unit || '-'}</span></td>
+          <td class="p-3.5 text-slate-500">${ds.min} - ${ds.max}</td>
+          <td class="p-3.5 text-slate-500">${ds.decimals}</td>
+          <td class="p-3.5 font-bold text-slate-900 dark:text-white" id="table-val-${ds.pin}">${formatted}</td>
+          <td class="p-3.5 text-right pr-5">
+            <button onclick="openEditDatastreamModal('${ds.pin}')" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 text-slate-600 hover:text-[#00c282] font-semibold text-xs transition">Edit</button>
+          </td>
+        `;
         tbody.appendChild(tr);
       });
     }
 
+    // --- Helpers & Settings ---
     function logActionEvent(msg, color) {
       var list = document.getElementById('action-log-list');
       if (!list) return;
@@ -1076,6 +1283,15 @@
     }
 
     function updateFirmwareCodeBlock() {
+      var publishLines = '';
+      appState.datastreams.forEach(function(ds) {
+        if (ds.widgetType !== 'actuator') {
+          publishLines += '    // Stream ' + ds.name + ' (' + ds.unit + ')\n' +
+            '    float val_' + ds.pin + ' = readSensor_' + ds.pin + '();\n' +
+            '    client.publish((base + "' + ds.pin + '").c_str(), String(val_' + ds.pin + ', ' + ds.decimals + ').c_str());\n';
+        }
+      });
+
       var code = '';
       if (appState.firmwareType === 'wifimanager') {
         code = '#include <WiFiManager.h> // Install WiFiManager by tzapu via Library Manager\n#include <PubSubClient.h>\n\n' +
@@ -1086,20 +1302,20 @@
           'void setup() {\n' +
           '  Serial.begin(115200);\n' +
           '  pinMode(2, OUTPUT);\n\n' +
-          '  // Auto-Captive Portal: Connects to Wi-Fi, or creates "Clynk-Setup-AP" if offline\n' +
+          '  // Auto Captive Portal on "Clynk-Setup-AP"\n' +
           '  WiFiManager wm;\n' +
           '  if (!wm.autoConnect("Clynk-Setup-AP")) {\n' +
-          '    Serial.println("Failed to connect, restarting ESP32...");\n' +
+          '    Serial.println("Restarting ESP32...");\n' +
           '    ESP.restart();\n' +
           '  }\n' +
-          '  Serial.println("✅ Wi-Fi connected via Captive Portal!");\n\n' +
+          '  Serial.println("✅ Wi-Fi connected!");\n' +
           '  client.setServer(mqtt_server, mqtt_port);\n' +
           '  client.setCallback(callback);\n' +
           '}\n\n' +
           'void callback(char* topic, byte* payload, unsigned int length) {\n' +
           '  String msg = "";\n' +
           '  for (int i = 0; i < length; i++) msg += (char)payload[i];\n' +
-          '  if (String(topic).endsWith("/V3")) digitalWrite(2, msg.toInt() ? HIGH : LOW); // Water Pump\n' +
+          '  if (String(topic).endsWith("/V3")) digitalWrite(2, msg.toInt() ? HIGH : LOW);\n' +
           '}\n\n' +
           'void reconnect() {\n' +
           '  while (!client.connected()) {\n' +
@@ -1108,19 +1324,17 @@
           '    else delay(2000);\n' +
           '  }\n' +
           '}\n\n' +
+          'float readSensor_V0() { return 28.0 + (random(0, 30)/10.0); }\n' +
+          'float readSensor_V1() { return 88.0 + (random(0, 40)/10.0); }\n' +
+          'float readSensor_V6() { return 45.0 + (random(0, 30)/10.0); }\n\n' +
           'void loop() {\n' +
           '  if (!client.connected()) reconnect();\n' +
           '  client.loop();\n' +
           '  static unsigned long last = 0;\n' +
           '  if (millis() - last > 1000) {\n' +
           '    last = millis();\n' +
-          '    float temp = 28.0 + (random(0, 30) / 10.0);\n' +
-          '    float hum  = 88.0 + (random(0, 40) / 10.0);\n' +
-          '    float soil = 45.0 + (random(0, 30) / 10.0);\n' +
           '    String base = "clynk/" + String(device_id) + "/";\n' +
-          '    client.publish((base + "V0").c_str(), String(temp, 1).c_str());\n' +
-          '    client.publish((base + "V1").c_str(), String(hum, 1).c_str());\n' +
-          '    client.publish((base + "V6").c_str(), String(soil, 1).c_str());\n' +
+          publishLines +
           '  }\n' +
           '}';
       } else {
@@ -1152,19 +1366,17 @@
           '    else delay(2000);\n' +
           '  }\n' +
           '}\n\n' +
+          'float readSensor_V0() { return 28.0 + (random(0, 30)/10.0); }\n' +
+          'float readSensor_V1() { return 88.0 + (random(0, 40)/10.0); }\n' +
+          'float readSensor_V6() { return 45.0 + (random(0, 30)/10.0); }\n\n' +
           'void loop() {\n' +
           '  if (!client.connected()) reconnect();\n' +
           '  client.loop();\n' +
           '  static unsigned long last = 0;\n' +
           '  if (millis() - last > 1000) {\n' +
           '    last = millis();\n' +
-          '    float temp = 28.0 + (random(0, 30) / 10.0);\n' +
-          '    float hum  = 88.0 + (random(0, 40) / 10.0);\n' +
-          '    float soil = 45.0 + (random(0, 30) / 10.0);\n' +
           '    String base = "clynk/" + String(device_id) + "/";\n' +
-          '    client.publish((base + "V0").c_str(), String(temp, 1).c_str());\n' +
-          '    client.publish((base + "V1").c_str(), String(hum, 1).c_str());\n' +
-          '    client.publish((base + "V6").c_str(), String(soil, 1).c_str());\n' +
+          publishLines +
           '  }\n' +
           '}';
       }
@@ -1186,17 +1398,6 @@
       if (tag) {
         appState.deviceLocation += ' • ' + tag;
         document.getElementById('device-location').innerText = appState.deviceLocation;
-      }
-    }
-
-    function editDatastreamPrompt(pin) {
-      var ds = appState.datastreams.find(function(d) { return d.pin === pin; });
-      if (!ds) return;
-      var newName = prompt('Enter new name for Datastream ' + pin + ':', ds.name);
-      if (newName) {
-        ds.name = newName;
-        localStorage.setItem('clynk_datastreams', JSON.stringify(appState.datastreams));
-        renderDatastreamsTable();
       }
     }
 
@@ -1223,11 +1424,16 @@
     }
 
     function exportCSVData() {
-      var csv = 'Timestamp,Pin_V0_Temp,Pin_V1_Humidity,Pin_V6_SoilMoisture\n';
-      var now = new Date().toISOString();
-      csv += '"' + now + '",' + appState.pins.V0 + ',' + appState.pins.V1 + ',' + appState.pins.V6 + '\n';
+      var header = 'Timestamp';
+      appState.datastreams.forEach(d => { header += ',' + d.pin + '_' + d.name.replace(/\s+/g, '_'); });
+      header += '\n';
+
+      var row = new Date().toISOString();
+      appState.datastreams.forEach(d => { row += ',' + (appState.pins[d.pin] !== undefined ? appState.pins[d.pin] : 0); });
+      row += '\n';
+
       var a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.href = URL.createObjectURL(new Blob([header + row], { type: 'text/csv' }));
       a.download = 'clynk_telemetry_' + Date.now() + '.csv';
       a.click();
     }
