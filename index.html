@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Clynk.Console • Fully Customizable IoT Datastreams</title>
+  <title>Clynk • Professional IoT Telemetry & Control Platform</title>
   
   <!-- PWA & Mobile Web App Meta -->
   <meta name="theme-color" content="#00c282">
@@ -11,13 +11,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Clynk">
   
-  <!-- SVG Favicon with Blynk-Style "C" Mark -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='28' fill='%2300c282'/%3E%3Cpath d='M65 35 C55 24, 38 24, 30 36 C22 48, 24 64, 34 72 C44 79, 58 77, 65 67' fill='none' stroke='white' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E">
+  <!-- SVG Favicon with Clynk Emerald Icon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300e699'/%3E%3Cstop offset='100%25' stop-color='%2300a36d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='28' fill='url(%23g)'/%3E%3Cpath d='M65 34 C54 22, 36 24, 28 36 C20 48, 22 64, 33 72 C44 80, 59 78, 66 66' fill='none' stroke='white' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E">
 
   <!-- Web App Manifest (PWA) -->
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Clynk%20IoT%20Console%22%2C%22short_name%22%3A%22Clynk%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230e1422%22%2C%22theme_color%22%3A%22%2300c282%22%7D">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Clynk%20IoT%20Platform%22%2C%22short_name%22%3A%22Clynk%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080c14%22%2C%22theme_color%22%3A%22%2300c282%22%7D">
 
-  <!-- Fonts -->
+  <!-- Premium Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,22 +30,37 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            blynk: {
+            brand: {
               DEFAULT: '#00c282',
-              50: '#e6faf2',
-              100: '#cbf5e4',
-              400: '#33d39f',
+              50: '#ebfbf5',
+              100: '#cefae6',
+              200: '#a1f3d0',
+              300: '#64e6b2',
+              400: '#27cf8f',
               500: '#00c282',
-              600: '#00a36d',
-              700: '#008559',
-              dark: '#111827',
-              gray: '#f3f4f6',
-              border: '#e5e7eb',
+              600: '#009d68',
+              700: '#007d55',
+              800: '#036244',
+              900: '#05513a',
+              950: '#012e21',
+            },
+            obsidian: {
+              950: '#06090e',
+              900: '#0a0e17',
+              850: '#0f1422',
+              800: '#151c2e',
+              750: '#1b243b',
+              700: '#232e4a',
             }
+          },
+          boxShadow: {
+            'glow-sm': '0 0 15px -3px rgba(0, 194, 130, 0.3)',
+            'glow-md': '0 0 25px -5px rgba(0, 194, 130, 0.4)',
+            'glow-lg': '0 0 35px -5px rgba(0, 194, 130, 0.5)',
           }
         }
       }
@@ -58,244 +73,313 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 194, 130, 0.5); }
+
+    /* Ambient Background Gradients */
     body {
       background-color: #f8fafc;
-      color: #1e293b;
+      color: #0f172a;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     .dark body {
-      background-color: #0b0f19;
-      color: #e2e8f0;
+      background-color: #070a10;
+      color: #f1f5f9;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 194, 130, 0.07) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
     }
-    .blynk-card {
+
+    /* Glass Cards */
+    .glass-panel {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dark .glass-panel {
+      background: rgba(15, 20, 34, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+    }
+    .glass-panel:hover {
+      border-color: rgba(0, 194, 130, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Tab Switcher Active State */
+    .clynk-nav-tab {
+      position: relative;
       transition: all 0.2s ease;
     }
-    .dark .blynk-card {
-      background: #111827;
-      border-color: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    .blynk-card:hover {
-      border-color: #cbd5e1;
-    }
-    .dark .blynk-card:hover {
-      border-color: rgba(0, 194, 130, 0.3);
-    }
-    .blynk-tab.active {
+    .clynk-nav-tab.active {
       color: #00c282;
-      border-bottom: 2px solid #00c282;
       font-weight: 700;
     }
-    .time-btn.active {
-      background-color: #00c282;
-      color: #ffffff;
-      font-weight: 600;
+    .clynk-nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #00c282, #34d399);
+      border-radius: 9999px;
+      box-shadow: 0 0 12px rgba(0, 194, 130, 0.8);
     }
+
+    /* Gauge Arc Animation */
     .gauge-arc {
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
-      transition: stroke-dashoffset 0.6s ease;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
     }
-    .custom-scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+
+    /* Pulsing animations */
+    @keyframes subtle-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.97); }
     }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
+    .live-pulse {
+      animation: subtle-pulse 2s infinite ease-in-out;
     }
-    @keyframes toast-slide {
-      0% { transform: translateY(-20px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
+
+    /* Toast Animation */
+    @keyframes toast-enter {
+      0% { transform: translateX(100%) scale(0.9); opacity: 0; }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
     }
-    .toast-animate {
-      animation: toast-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .toast-slide {
+      animation: toast-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-white">
 
   <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2.5 pointer-events-none"></div>
 
   <!-- TOP APP BAR -->
-  <header class="bg-white dark:bg-[#0e1422] border-b border-slate-200 dark:border-white/10 px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
+  <header class="bg-white/85 dark:bg-obsidian-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/5 px-4 lg:px-8 py-3 flex items-center justify-between sticky top-0 z-40">
     <div class="flex items-center space-x-4">
-      <!-- Clynk Logo Mark ("C") -->
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00e699] to-[#00a36d] flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-emerald-500/20 select-none">
-        C
+      <!-- Clynk Logo Mark -->
+      <div class="flex items-center space-x-2.5 cursor-pointer" onclick="switchTab('dashboard')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00e699] to-[#00a36d] flex items-center justify-center text-white font-extrabold text-xl shadow-glow-sm select-none">
+          C
+        </div>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">Clynk</span>
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-brand-500/10 text-brand-500 dark:text-brand-400 border border-brand-500/20 font-mono">PRO</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono hidden sm:block">IoT Console v2.7</p>
+        </div>
       </div>
-      <div class="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <span class="hover:text-slate-800 dark:hover:text-white cursor-pointer font-bold text-emerald-600">Clynk</span>
-        <span>/</span>
-        <span class="hover:text-slate-800 dark:hover:text-white cursor-pointer">Devices</span>
+
+      <!-- Breadcrumbs -->
+      <div class="hidden md:flex items-center space-x-2 text-xs text-slate-400 pl-3 border-l border-slate-200 dark:border-white/10">
+        <span class="hover:text-slate-600 dark:hover:text-slate-200 transition">Farms</span>
         <span>/</span>
         <span id="nav-device-title" class="font-semibold text-slate-800 dark:text-slate-200">Iot farming system 001</span>
       </div>
     </div>
 
-    <!-- Mode Selector -->
-    <div class="flex items-center space-x-2">
-      <div class="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg text-[11px] font-semibold border border-slate-200 dark:border-white/5">
-        <button onclick="setStreamMode('mqtt')" id="mode-btn-mqtt" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition font-bold flex items-center space-x-1">MQTT Stream</button>
-        <button onclick="setStreamMode('serial')" id="mode-btn-serial" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition flex items-center space-x-1"><i data-lucide="usb" class="w-3 h-3"></i><span>USB Serial</span></button>
-        <button onclick="setStreamMode('http')" id="mode-btn-http" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">HTTP</button>
-        <button onclick="setStreamMode('sim')" id="mode-btn-sim" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">Sim</button>
+    <!-- Center Quick Telemetry Ticker -->
+    <div class="hidden xl:flex items-center space-x-6 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-obsidian-900/90 border border-slate-200 dark:border-white/5 text-[11px] font-mono">
+      <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>MQTT: <b class="text-slate-800 dark:text-white font-bold">broker.emqx.io</b></span>
+      </div>
+      <span class="text-slate-300 dark:text-slate-700">|</span>
+      <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400">
+        <i data-lucide="activity" class="w-3.5 h-3.5 text-brand-500"></i>
+        <span>Telemetry: <b id="ticker-rate" class="text-brand-500 font-bold">1.0</b> Hz</span>
+      </div>
+      <span class="text-slate-300 dark:text-slate-700">|</span>
+      <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400">
+        <i data-lucide="wifi" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span>RSSI: <b class="text-slate-800 dark:text-white font-bold">-58 dBm</b></span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center space-x-2.5">
+      <!-- Mode Selector Segmented Pills -->
+      <div class="flex items-center bg-slate-100 dark:bg-obsidian-900/90 p-1 rounded-xl text-[11px] font-semibold border border-slate-200 dark:border-white/5">
+        <button onclick="setStreamMode('mqtt')" id="mode-btn-mqtt" class="px-3 py-1 rounded-lg bg-brand-500 text-white shadow-glow-sm transition font-bold flex items-center space-x-1">
+          <i data-lucide="radio" class="w-3 h-3"></i>
+          <span>MQTT</span>
+        </button>
+        <button onclick="setStreamMode('serial')" id="mode-btn-serial" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition flex items-center space-x-1">
+          <i data-lucide="usb" class="w-3 h-3"></i>
+          <span class="hidden sm:inline">USB Serial</span>
+        </button>
+        <button onclick="setStreamMode('http')" id="mode-btn-http" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition">HTTP</button>
+        <button onclick="setStreamMode('sim')" id="mode-btn-sim" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition">Sim</button>
       </div>
 
       <!-- Online Status Badge -->
-      <div id="status-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-[#00c282] text-xs font-bold">
-        <span class="w-2 h-2 rounded-full bg-[#00c282] animate-pulse"></span>
+      <div id="status-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-brand-500 text-xs font-extrabold tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-brand-500 shadow-glow-sm animate-pulse"></span>
         <span id="status-text">ONLINE</span>
       </div>
 
-      <button onclick="openDeviceSettingsModal()" class="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Edit Device Details">
-        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      <!-- Dark Mode & Settings -->
+      <button onclick="openDeviceSettingsModal()" class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-obsidian-800 transition border border-transparent hover:border-slate-200 dark:hover:border-white/10" title="Device Settings">
+        <i data-lucide="settings-2" class="w-4 h-4"></i>
       </button>
-      <button onclick="toggleDarkMode()" class="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle Dark/Light Mode">
-        <i data-lucide="moon" class="w-4 h-4"></i>
+      <button onclick="toggleDarkMode()" class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-obsidian-800 transition border border-transparent hover:border-slate-200 dark:hover:border-white/10" title="Toggle Theme">
+        <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+        <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
       </button>
     </div>
   </header>
 
   <!-- DEVICE HERO SUBHEADER -->
-  <div class="bg-white dark:bg-[#0e1422] border-b border-slate-200 dark:border-white/10 px-4 lg:px-8 pt-5 pb-0">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-start space-x-3.5">
-        <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300">
-          <i data-lucide="box" class="w-6 h-6 text-[#00c282]"></i>
+  <div class="bg-white/50 dark:bg-obsidian-950/40 border-b border-slate-200/80 dark:border-white/5 px-4 lg:px-8 pt-6 pb-0">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div class="flex items-start space-x-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-sky-500/10 border border-brand-500/30 flex items-center justify-center text-brand-500 shadow-glow-sm">
+          <i data-lucide="cpu" class="w-7 h-7"></i>
         </div>
         <div>
           <div class="flex items-center space-x-3">
-            <h1 id="device-title" class="text-xl font-bold text-slate-900 dark:text-white">Iot farming system 001</h1>
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 text-[#00c282] border border-emerald-200 dark:border-emerald-800/40">ONLINE</span>
-            <button onclick="openDeviceSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs">
-              <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+            <h1 id="device-title" class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Iot farming system 001</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/15 text-brand-500 dark:text-brand-400 border border-brand-500/30">ONLINE</span>
+            <button onclick="openDeviceSettingsModal()" class="text-slate-400 hover:text-brand-500 transition">
+              <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
             </button>
           </div>
-          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
-            <div class="flex items-center space-x-1">
-              <i data-lucide="user" class="w-3.5 h-3.5"></i>
-              <span id="device-owner">Lee</span>
+          
+          <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+            <div class="flex items-center space-x-1.5">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span id="device-owner" class="font-medium text-slate-700 dark:text-slate-300">Lee</span>
             </div>
-            <div class="flex items-center space-x-1">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-              <span id="device-location">Farm Villa</span>
+            <div class="flex items-center space-x-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span id="device-location" class="font-medium text-slate-700 dark:text-slate-300">Farm Villa</span>
             </div>
-            <div class="flex items-center space-x-1">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#00c282]"></i>
-              <span id="device-model" class="font-mono text-slate-700 dark:text-slate-300 font-semibold">ESP32 DevKit V1</span>
+            <div class="flex items-center space-x-1.5">
+              <i data-lucide="chip" class="w-3.5 h-3.5 text-brand-500"></i>
+              <span id="device-model" class="font-mono font-bold text-slate-900 dark:text-white">ESP32 DevKit V1</span>
             </div>
-            <button onclick="addTagPrompt()" class="text-[#00c282] hover:underline font-semibold flex items-center space-x-0.5">
-              <i data-lucide="tag" class="w-3 h-3"></i>
-              <span>+ Add Tag</span>
-            </button>
+            <div class="flex items-center space-x-1.5 font-mono text-[11px] text-slate-400">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>ID: <b id="header-devid" class="text-brand-500">device1</b></span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center space-x-2 pb-2 md:pb-0">
-        <button onclick="openNewDatastreamModal()" class="px-3.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 text-xs font-bold flex items-center space-x-1.5 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-          <span>+ Add Pin</span>
+      <div class="flex items-center space-x-2.5 pb-3 md:pb-0">
+        <button onclick="openNewDatastreamModal()" class="px-4 py-2 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-500 dark:text-brand-400 border border-brand-500/30 text-xs font-bold flex items-center space-x-1.5 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Add Custom Pin</span>
         </button>
-        <button onclick="openAutomationsModal()" class="px-3.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 text-xs font-bold flex items-center space-x-1.5 transition">
-          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-          <span>Automations</span>
+        <button onclick="openAutomationsModal()" class="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center space-x-1.5 transition">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span>Automations (2)</span>
         </button>
-        <button onclick="saveCurrentTemplate()" class="px-3.5 py-1.5 rounded-lg bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
-          <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
-          <span>Save Template</span>
+        <button onclick="saveCurrentTemplate()" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center space-x-1.5 shadow-glow-sm transition">
+          <i data-lucide="bookmark-check" class="w-4 h-4"></i>
+          <span>Save Layout</span>
         </button>
       </div>
     </div>
 
-    <!-- TABS -->
-    <div class="max-w-7xl mx-auto flex items-center space-x-8 mt-5 border-t border-slate-100 dark:border-white/5 overflow-x-auto text-xs font-medium">
-      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="blynk-tab active py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
-        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-        <span>Dashboard</span>
+    <!-- MODERN NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto flex items-center space-x-8 mt-6 overflow-x-auto text-xs font-semibold">
+      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="clynk-nav-tab active py-3.5 text-slate-500 dark:text-slate-400 hover:text-brand-500 flex items-center space-x-2">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Live Dashboard</span>
       </button>
-      <button onclick="switchTab('datastreams')" id="tab-btn-datastreams" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
-        <i data-lucide="layers" class="w-4 h-4"></i>
-        <span>Datastreams</span>
+      <button onclick="switchTab('datastreams')" id="tab-btn-datastreams" class="clynk-nav-tab py-3.5 text-slate-500 dark:text-slate-400 hover:text-brand-500 flex items-center space-x-2">
+        <i data-lucide="layers-3" class="w-4 h-4"></i>
+        <span>Datastreams Manager</span>
       </button>
-      <button onclick="switchTab('actionslog')" id="tab-btn-actionslog" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
-        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-        <span>Actions Log</span>
+      <button onclick="switchTab('actionslog')" id="tab-btn-actionslog" class="clynk-nav-tab py-3.5 text-slate-500 dark:text-slate-400 hover:text-brand-500 flex items-center space-x-2">
+        <i data-lucide="terminal" class="w-4 h-4"></i>
+        <span>Actions & Audit Log</span>
       </button>
-      <button onclick="switchTab('deviceinfo')" id="tab-btn-deviceinfo" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
-        <i data-lucide="info" class="w-4 h-4"></i>
-        <span>Device Info</span>
+      <button onclick="switchTab('deviceinfo')" id="tab-btn-deviceinfo" class="clynk-nav-tab py-3.5 text-slate-500 dark:text-slate-400 hover:text-brand-500 flex items-center space-x-2">
+        <i data-lucide="server" class="w-4 h-4"></i>
+        <span>Device Diagnostics</span>
       </button>
-      <button onclick="switchTab('firmware')" id="tab-btn-firmware" class="blynk-tab py-3 text-slate-600 dark:text-slate-400 hover:text-[#00c282] flex items-center space-x-1.5">
+      <button onclick="switchTab('firmware')" id="tab-btn-firmware" class="clynk-nav-tab py-3.5 text-slate-500 dark:text-slate-400 hover:text-brand-500 flex items-center space-x-2">
         <i data-lucide="code-2" class="w-4 h-4"></i>
-        <span>ESP32 Firmware</span>
+        <span>Firmware Studio</span>
       </button>
     </div>
   </div>
 
   <!-- MAIN BODY CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
 
     <!-- TAB 1: DASHBOARD VIEW -->
-    <div id="view-dashboard" class="space-y-5">
+    <div id="view-dashboard" class="space-y-6">
       
-      <!-- TIME FILTER TOOLBAR -->
-      <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#0e1422] p-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs">
-        <div class="flex items-center space-x-1 overflow-x-auto">
-          <button onclick="setTimeFilter('latest')" id="tbtn-latest" class="time-btn active px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition">Latest</button>
-          <button onclick="setTimeFilter('1h')" id="tbtn-1h" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Last Hour</button>
-          <button onclick="setTimeFilter('6h')" id="tbtn-6h" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">6 Hours</button>
-          <button onclick="setTimeFilter('1d')" id="tbtn-1d" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">1 Day</button>
-          <button onclick="setTimeFilter('1w')" id="tbtn-1w" class="time-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">1 Week</button>
+      <!-- TOP STATUS & FILTER TOOLBAR -->
+      <div class="flex flex-wrap items-center justify-between gap-4 glass-panel p-3.5 text-xs">
+        <div class="flex items-center space-x-1.5 overflow-x-auto">
+          <button onclick="setTimeFilter('latest')" id="tbtn-latest" class="px-3.5 py-1.5 rounded-lg bg-brand-500 text-white font-bold shadow-glow-sm transition">Latest</button>
+          <button onclick="setTimeFilter('1h')" id="tbtn-1h" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-obsidian-800 transition">1 Hour</button>
+          <button onclick="setTimeFilter('6h')" id="tbtn-6h" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-obsidian-800 transition">6 Hours</button>
+          <button onclick="setTimeFilter('1d')" id="tbtn-1d" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-obsidian-800 transition">1 Day</button>
+          <button onclick="setTimeFilter('1w')" id="tbtn-1w" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-obsidian-800 transition">1 Week</button>
         </div>
 
-        <div class="flex items-center space-x-2 text-slate-500 text-xs font-mono">
-          <span>Rate: <b id="packet-rate-hz" class="text-emerald-500">1.0</b> Hz</span>
-          <span>•</span>
-          <button onclick="exportCSVData()" class="hover:text-emerald-600 flex items-center space-x-1 font-sans font-semibold">
+        <div class="flex items-center space-x-3 text-slate-500 font-mono text-xs">
+          <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-obsidian-900 border border-slate-200 dark:border-white/5">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+            <span>Trigger Engine: <b class="text-brand-500">READY</b></span>
+          </div>
+          <button onclick="exportCSVData()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-obsidian-800 hover:bg-slate-200 dark:hover:bg-obsidian-700 text-slate-700 dark:text-slate-200 font-sans font-bold flex items-center space-x-1.5 transition">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span>Export CSV</span>
           </button>
         </div>
       </div>
 
-      <!-- DYNAMIC WIDGET GRID (Rendered 100% dynamically based on configured datastreams!) -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5" id="dynamic-widget-grid">
-        <!-- Dynamically rendered widgets for V0-V15 -->
+      <!-- DYNAMIC WIDGET GRID (100% Data-Driven & Styled to Perfection) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6" id="dynamic-widget-grid">
+        <!-- Rendered by renderAllWidgets() -->
       </div>
     </div>
 
-    <!-- TAB 2: DATASTREAMS VIEW -->
-    <div id="view-datastreams" class="hidden space-y-5">
-      <div class="flex items-center justify-between">
+    <!-- TAB 2: DATASTREAMS MANAGER -->
+    <div id="view-datastreams" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Virtual Datastreams Manager</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Configure virtual ports, custom names, double/float types, units, and boundaries</p>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Virtual Datastreams Manager</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Define custom virtual ports, data types, engineering units, and min/max boundaries</p>
         </div>
-        <button onclick="openNewDatastreamModal()" class="px-4 py-2 rounded-xl bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+        <button onclick="openNewDatastreamModal()" class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center space-x-2 shadow-glow-sm transition self-start">
           <i data-lucide="plus" class="w-4 h-4"></i>
-          <span>Add Custom Port</span>
+          <span>Create New Port</span>
         </button>
       </div>
 
-      <div class="blynk-card overflow-hidden">
+      <div class="glass-panel overflow-hidden">
         <table class="w-full text-left text-xs">
-          <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-white/10 text-slate-500 font-semibold uppercase text-[10px]">
+          <thead class="bg-slate-50/80 dark:bg-obsidian-900/90 border-b border-slate-200 dark:border-white/5 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
             <tr>
-              <th class="p-3.5 pl-5">Pin / Port</th>
-              <th class="p-3.5">Datastream Name</th>
-              <th class="p-3.5">Data Type</th>
-              <th class="p-3.5">Unit</th>
-              <th class="p-3.5">Min - Max</th>
-              <th class="p-3.5">Decimals</th>
-              <th class="p-3.5">Current Value</th>
-              <th class="p-3.5 text-right pr-5">Actions</th>
+              <th class="p-4 pl-6">Virtual Pin</th>
+              <th class="p-4">Datastream Name</th>
+              <th class="p-4">Data Type</th>
+              <th class="p-4">Unit</th>
+              <th class="p-4">Boundaries</th>
+              <th class="p-4">Decimals</th>
+              <th class="p-4">Current Telemetry</th>
+              <th class="p-4 text-right pr-6">Quick Actions</th>
             </tr>
           </thead>
           <tbody id="datastreams-table-body" class="divide-y divide-slate-100 dark:divide-white/5 font-mono"></tbody>
@@ -303,90 +387,123 @@
       </div>
     </div>
 
-    <!-- TAB 3: ACTIONS & DATA LOG TAB -->
-    <div id="view-actionslog" class="hidden space-y-5">
+    <!-- TAB 3: ACTIONS & AUDIT LOG -->
+    <div id="view-actionslog" class="hidden space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Actions & Telemetry Event Log</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Live timeline of threshold triggers, actuator switches, and alert events</p>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Live Telemetry & Actions Log</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Chronological audit trail of hardware triggers, switch toggles, and threshold events</p>
         </div>
-        <button onclick="clearActionLogs()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200">
+        <button onclick="clearActionLogs()" class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-obsidian-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-obsidian-700 transition">
           Clear Logs
         </button>
       </div>
 
-      <div class="blynk-card p-4">
-        <div id="action-log-list" class="space-y-2 text-xs font-mono max-h-[400px] overflow-y-auto custom-scroll divide-y divide-slate-100 dark:divide-white/5">
-          <div class="py-2 flex items-center justify-between text-slate-500">
-            <span>[14:20:00] System Initialized & Auto-Triggers Active.</span>
-            <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">INIT</span>
+      <div class="glass-panel p-5">
+        <div id="action-log-list" class="space-y-2.5 text-xs font-mono max-h-[460px] overflow-y-auto custom-scroll divide-y divide-slate-100 dark:divide-white/5">
+          <div class="py-2.5 flex items-center justify-between text-slate-400">
+            <span>[14:20:00] System initialized. Connected to MQTT broker wss://broker.emqx.io:8084/mqtt.</span>
+            <span class="text-[10px] bg-slate-100 dark:bg-obsidian-800 px-2 py-0.5 rounded-md font-bold text-slate-400">SYSTEM_INIT</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 4: DEVICE INFO VIEW -->
-    <div id="view-deviceinfo" class="hidden space-y-5">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="blynk-card p-6 space-y-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-2">Hardware Specification</h3>
-          <div class="space-y-3 text-xs">
-            <div class="flex justify-between"><span class="text-slate-500">Device Model:</span><span id="info-model" class="font-bold text-slate-800 dark:text-white">ESP32 DevKit V1</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Firmware Build:</span><span class="font-mono text-emerald-600">v2.6.0-clynk-custom-ports</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Connection Protocol:</span><span id="info-protocol" class="font-semibold text-slate-800 dark:text-white">MQTT over WSS (1.0 Hz)</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">MAC Address:</span><span class="font-mono text-slate-600 dark:text-slate-400">24:6F:28:B4:7E:9C</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Auth Token / Device ID:</span><span id="info-devid" class="font-mono text-slate-800 dark:text-slate-200">device1</span></div>
+    <!-- TAB 4: DEVICE DIAGNOSTICS -->
+    <div id="view-deviceinfo" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-panel p-6 space-y-5">
+          <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-white/5 pb-4">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+              <i data-lucide="cpu" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Hardware Telemetry</h3>
+              <p class="text-[11px] text-slate-400 font-mono">Microcontroller & Radio Metrics</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs font-sans">
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Model:</span><span id="info-model" class="font-bold text-slate-800 dark:text-white font-mono">ESP32 DevKit V1</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Core Clock:</span><span class="font-mono text-slate-800 dark:text-white">240 MHz (Dual Core Xtensa)</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Flash Memory:</span><span class="font-mono text-slate-800 dark:text-white">4 MB SPI Flash</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Firmware Build:</span><span class="font-mono text-brand-500 font-bold">v2.7.0-clynk-pro</span></div>
+            <div class="flex justify-between py-1"><span class="text-slate-400">Wi-Fi MAC:</span><span class="font-mono text-slate-500">24:6F:28:B4:7E:9C</span></div>
           </div>
         </div>
 
-        <div class="blynk-card p-6 space-y-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-2">Cloud & Telemetry Status</h3>
-          <div class="space-y-3 text-xs">
-            <div class="flex justify-between"><span class="text-slate-500">MQTT Broker:</span><span class="font-mono text-slate-800 dark:text-white">broker.emqx.io</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">MQTT Port:</span><span class="font-mono text-slate-800 dark:text-white">1883 (TCP) / 8084 (WSS)</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">MQTT Topic:</span><span class="font-mono text-[#00c282]">clynk/device1/#</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">REST Update Endpoint:</span><span class="font-mono text-slate-600 dark:text-slate-400">/api/blynk/update</span></div>
+        <div class="glass-panel p-6 space-y-5">
+          <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-white/5 pb-4">
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
+              <i data-lucide="cloud-lightning" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Cloud Transport Matrix</h3>
+              <p class="text-[11px] text-slate-400 font-mono">Global Mesh Connectivity</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs font-sans">
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">MQTT Broker:</span><span class="font-mono text-slate-800 dark:text-white">broker.emqx.io</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Port (TCP / WSS):</span><span class="font-mono text-slate-800 dark:text-white">1883 (TCP) / 8084 (TLS WSS)</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Active Topic:</span><span class="font-mono text-brand-500 font-bold">clynk/device1/#</span></div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">REST Ingestion:</span><span class="font-mono text-slate-500">/api/blynk/update</span></div>
+            <div class="flex justify-between py-1"><span class="text-slate-400">Telemetry Latency:</span><span class="font-mono text-emerald-400 font-bold">&lt; 8 ms</span></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 5: ESP32 FIRMWARE VIEW -->
-    <div id="view-firmware" class="hidden space-y-5">
-      <div class="blynk-card p-6 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+    <!-- TAB 5: FIRMWARE STUDIO -->
+    <div id="view-firmware" class="hidden space-y-6">
+      <div class="glass-panel p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 class="text-base font-bold text-slate-900 dark:text-white">Generated Arduino C++ Sketch</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Auto-generated sketch streaming all configured virtual datastreams</p>
+            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Dynamic Arduino C++ Sketch Studio</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Production-ready sketch synchronized to your active device datastreams</p>
           </div>
           
-          <div class="flex items-center space-x-2">
-            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
-              <button onclick="setFirmwareType('standard')" id="fw-btn-standard" class="px-2.5 py-1 rounded-md bg-[#00c282] text-white">Standard Wi-Fi</button>
-              <button onclick="setFirmwareType('wifimanager')" id="fw-btn-wifimanager" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300">Wi-Fi Captive Portal</button>
+          <div class="flex items-center space-x-2.5">
+            <div class="flex items-center bg-slate-100 dark:bg-obsidian-900 p-1 rounded-xl text-xs font-bold border border-slate-200 dark:border-white/5">
+              <button onclick="setFirmwareType('standard')" id="fw-btn-standard" class="px-3 py-1.5 rounded-lg bg-brand-500 text-white shadow-glow-sm transition">Standard Wi-Fi</button>
+              <button onclick="setFirmwareType('wifimanager')" id="fw-btn-wifimanager" class="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-white transition">Wi-Fi Captive Portal</button>
             </div>
 
-            <button onclick="copyFirmwareCode()" class="px-3.5 py-1.5 rounded-lg bg-[#00c282] hover:bg-[#00a36d] text-white text-xs font-bold flex items-center space-x-1.5 transition">
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <button onclick="copyFirmwareCode()" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center space-x-2 shadow-glow-sm transition">
+              <i data-lucide="copy" class="w-4 h-4"></i>
               <span id="copy-btn-text">Copy Code</span>
             </button>
           </div>
         </div>
 
-        <pre id="firmware-code-block" class="p-4 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs overflow-x-auto max-h-[420px] custom-scroll leading-relaxed border border-slate-800"></pre>
+        <!-- Mac IDE Style Code Container -->
+        <div class="rounded-2xl overflow-hidden border border-slate-800 bg-[#090d16] shadow-2xl">
+          <div class="bg-obsidian-900 px-4 py-2.5 flex items-center justify-between border-b border-white/5">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+              <span class="text-[11px] font-mono text-slate-400 pl-3">clynk_esp32_firmware.ino</span>
+            </div>
+            <span class="text-[10px] font-mono text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded">C++ / Arduino</span>
+          </div>
+          <pre id="firmware-code-block" class="p-5 text-emerald-400 font-mono text-xs overflow-x-auto max-h-[460px] custom-scroll leading-relaxed selection:bg-brand-500 selection:text-white"></pre>
+        </div>
       </div>
     </div>
 
   </main>
 
-  <!-- MODAL: DATASTREAM CREATOR & EDITOR (Blynk.Console Style) -->
-  <div id="modal-datastream-editor" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-          <i data-lucide="sliders" class="w-5 h-5 text-[#00c282]"></i>
-          <span id="ds-modal-title">Edit Virtual Datastream</span>
-        </h3>
+  <!-- MODAL: DATASTREAM EDITOR (Blynk 2.0 / SaaS Tier) -->
+  <div id="modal-datastream-editor" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-obsidian-900 rounded-3xl max-w-lg w-full p-6 space-y-5 border border-slate-200 dark:border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3.5">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+          </div>
+          <h3 id="ds-modal-title" class="text-base font-extrabold text-slate-900 dark:text-white">Configure Virtual Datastream</h3>
+        </div>
         <button onclick="closeDatastreamModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -394,222 +511,191 @@
 
       <input type="hidden" id="ds-edit-orig-pin">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans">
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Virtual Pin / Port</label>
-          <select id="ds-pin-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono font-bold focus:border-[#00c282]">
-            <option value="V0">V0</option>
-            <option value="V1">V1</option>
-            <option value="V2">V2</option>
-            <option value="V3">V3</option>
-            <option value="V4">V4</option>
-            <option value="V5">V5</option>
-            <option value="V6">V6</option>
-            <option value="V7">V7</option>
-            <option value="V8">V8</option>
-            <option value="V9">V9</option>
-            <option value="V10">V10</option>
-            <option value="V11">V11</option>
-            <option value="V12">V12</option>
-            <option value="V13">V13</option>
-            <option value="V14">V14</option>
-            <option value="V15">V15</option>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Virtual Port Pin</label>
+          <select id="ds-pin-select" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono font-bold focus:border-brand-500 focus:outline-none">
+            <option value="V0">V0</option><option value="V1">V1</option><option value="V2">V2</option><option value="V3">V3</option>
+            <option value="V4">V4</option><option value="V5">V5</option><option value="V6">V6</option><option value="V7">V7</option>
+            <option value="V8">V8</option><option value="V9">V9</option><option value="V10">V10</option><option value="V11">V11</option>
+            <option value="V12">V12</option><option value="V13">V13</option><option value="V14">V14</option><option value="V15">V15</option>
           </select>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Type</label>
-          <select id="ds-type-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
-            <option value="Double">Double (Decimal Floating Point)</option>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Data Type</label>
+          <select id="ds-type-select" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-sans focus:border-brand-500 focus:outline-none">
+            <option value="Double">Double (Floating Point)</option>
             <option value="Integer">Integer (Whole Number)</option>
-            <option value="Boolean">Boolean (ON / OFF Actuator)</option>
+            <option value="Boolean">Boolean (0 or 1 Actuator)</option>
             <option value="String">String / Text</option>
           </select>
         </div>
 
         <div class="md:col-span-2">
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Datastream Name</label>
-          <input type="text" id="ds-name-input" placeholder="e.g. CO2 Level, Soil Moisture, pH Sensor" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Datastream Name</label>
+          <input type="text" id="ds-name-input" placeholder="e.g. CO2 Sensor, Battery Voltage, pH Level" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white focus:border-brand-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Unit of Measurement</label>
-          <input type="text" id="ds-unit-input" list="unit-presets" placeholder="e.g. °C, %, ppm, lux, V, bar" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Engineering Unit</label>
+          <input type="text" id="ds-unit-input" list="unit-presets" placeholder="e.g. °C, %, ppm, V, lux" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono focus:border-brand-500 focus:outline-none">
           <datalist id="unit-presets">
-            <option value="°C"></option>
-            <option value="°F"></option>
-            <option value="%"></option>
-            <option value="ppm"></option>
-            <option value="pH"></option>
-            <option value="lux"></option>
-            <option value="V"></option>
-            <option value="mV"></option>
-            <option value="mA"></option>
-            <option value="A"></option>
-            <option value="W"></option>
-            <option value="kWh"></option>
-            <option value="bar"></option>
-            <option value="psi"></option>
-            <option value="hPa"></option>
-            <option value="L/min"></option>
-            <option value="m/s"></option>
-            <option value="state"></option>
+            <option value="°C"></option><option value="°F"></option><option value="%"></option>
+            <option value="ppm"></option><option value="pH"></option><option value="lux"></option>
+            <option value="V"></option><option value="mV"></option><option value="mA"></option>
+            <option value="bar"></option><option value="hPa"></option><option value="L/min"></option>
           </datalist>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Decimals Precision</label>
-          <select id="ds-decimals-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Decimals Precision</label>
+          <select id="ds-decimals-select" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono focus:border-brand-500 focus:outline-none">
             <option value="0">0 (e.g. 100)</option>
             <option value="1" selected>1 (e.g. 28.3)</option>
-            <option value="2">2 (e.g. 3.82)</option>
+            <option value="2">2 (e.g. 3.84)</option>
             <option value="3">3 (e.g. 0.125)</option>
           </select>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Min Boundary</label>
-          <input type="number" id="ds-min-input" value="0" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Min Scale</label>
+          <input type="number" id="ds-min-input" value="0" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono focus:border-brand-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Max Boundary</label>
-          <input type="number" id="ds-max-input" value="100" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Max Scale</label>
+          <input type="number" id="ds-max-input" value="100" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono focus:border-brand-500 focus:outline-none">
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Color Theme</label>
-          <select id="ds-color-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
-            <option value="#facc15">Yellow (Warm)</option>
-            <option value="#0284c7">Sky Blue (Hydro)</option>
-            <option value="#00c282" selected>Emerald Green (Flora)</option>
-            <option value="#a855f7">Purple (Soil / Nutrient)</option>
-            <option value="#f97316">Orange (Thermal)</option>
-            <option value="#ef4444">Red (Alert)</option>
-            <option value="#06b6d4">Cyan (Atmosphere)</option>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Widget Theme Color</label>
+          <select id="ds-color-select" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white focus:border-brand-500 focus:outline-none">
+            <option value="#00c282" selected>Emerald Neon (Default)</option>
+            <option value="#facc15">Yellow Amber</option>
+            <option value="#0284c7">Sky Cyan</option>
+            <option value="#a855f7">Neon Purple</option>
+            <option value="#f97316">Warm Orange</option>
+            <option value="#ef4444">Crimson Red</option>
           </select>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Widget Style</label>
-          <select id="ds-widget-select" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:border-[#00c282]">
-            <option value="gauge-chart" selected>Gauge + Live Chart (Paired)</option>
-            <option value="actuator">Relay / Switch Actuator</option>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Widget Layout Style</label>
+          <select id="ds-widget-select" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white focus:border-brand-500 focus:outline-none">
+            <option value="gauge-chart" selected>Paired Gauge & Live Chart</option>
+            <option value="actuator">Actuator / Relay Switch</option>
             <option value="metric">Digital Metric Card</option>
           </select>
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-        <button onclick="deleteDatastream()" id="ds-delete-btn" class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center space-x-1">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+      <div class="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <button onclick="deleteDatastream()" id="ds-delete-btn" class="text-xs text-red-500 hover:text-red-600 font-bold flex items-center space-x-1 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
           <span>Delete Pin</span>
         </button>
         <div class="flex items-center space-x-2">
-          <button onclick="closeDatastreamModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs">Cancel</button>
-          <button onclick="saveDatastreamForm()" class="px-4 py-2 rounded-lg bg-[#00c282] text-white font-bold text-xs hover:bg-[#00a36d]">Save Datastream</button>
+          <button onclick="closeDatastreamModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-obsidian-800 text-slate-600 dark:text-slate-300 font-bold text-xs">Cancel</button>
+          <button onclick="saveDatastreamForm()" class="px-5 py-2 rounded-xl bg-brand-500 text-white font-extrabold text-xs shadow-glow-sm hover:bg-brand-600 transition">Save Port</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- MODAL: AUTOMATIONS -->
-  <div id="modal-automations" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-          <i data-lucide="zap" class="w-5 h-5 text-[#00c282]"></i>
-          <span>Automations & Trigger Rules</span>
-        </h3>
+  <div id="modal-automations" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-obsidian-900 rounded-3xl max-w-lg w-full p-6 space-y-5 border border-slate-200 dark:border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3.5">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Smart Automations & Rules</h3>
+        </div>
         <button onclick="closeAutomationsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <!-- Rule 1 -->
-        <div class="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-2">
+      <div class="space-y-3.5 text-xs font-sans">
+        <div class="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-emerald-700 dark:text-emerald-400">💧 Auto-Irrigation Trigger</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="auto-pump-enable" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#00c282]"></div>
-            </label>
+            <span class="font-extrabold text-emerald-600 dark:text-emerald-400">💧 Auto-Irrigation Trigger</span>
+            <input type="checkbox" id="auto-pump-enable" checked class="w-4 h-4 accent-brand-500 cursor-pointer">
           </div>
-          <p class="text-slate-600 dark:text-slate-300 text-[11px]">
-            IF <b>Soil Moisture (V6)</b> &lt; <input type="number" id="auto-pump-thresh" value="35" class="w-12 px-1 py-0.5 border rounded font-mono text-center bg-white dark:bg-slate-800"> %
-            THEN Turn ON <b>Water Pump (V3)</b> automatically.
+          <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+            IF <b>Soil Moisture (V6)</b> &lt; <input type="number" id="auto-pump-thresh" value="35" class="w-12 px-1 py-0.5 rounded font-mono text-center bg-white dark:bg-obsidian-800 border border-slate-200 dark:border-white/10 font-bold text-brand-500"> %
+            THEN Automatically switch ON <b>Water Pump (V3)</b>.
           </p>
         </div>
 
-        <!-- Rule 2 -->
-        <div class="p-3.5 rounded-xl border border-red-200 dark:border-red-800/40 bg-red-50/50 dark:bg-red-950/20 space-y-2">
+        <div class="p-4 rounded-2xl border border-red-500/30 bg-red-500/5 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-red-700 dark:text-red-400">🚨 Greenhouse Heat Alert</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="auto-alarm-enable" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
-            </label>
+            <span class="font-extrabold text-red-600 dark:text-red-400">🚨 Thermal Greenhouse Siren</span>
+            <input type="checkbox" id="auto-alarm-enable" checked class="w-4 h-4 accent-red-500 cursor-pointer">
           </div>
-          <p class="text-slate-600 dark:text-slate-300 text-[11px]">
-            IF <b>Temperature (V0)</b> &gt; <input type="number" id="auto-temp-thresh" value="35" class="w-12 px-1 py-0.5 border rounded font-mono text-center bg-white dark:bg-slate-800"> °C
-            THEN Trigger <b>Alarm Siren (V2)</b> and notification.
+          <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+            IF <b>Temperature (V0)</b> &gt; <input type="number" id="auto-temp-thresh" value="35" class="w-12 px-1 py-0.5 rounded font-mono text-center bg-white dark:bg-obsidian-800 border border-slate-200 dark:border-white/10 font-bold text-red-500"> °C
+            THEN Trigger <b>Alarm Siren (V2)</b> and push toast notification.
           </p>
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-end space-x-2">
-        <button onclick="closeAutomationsModal()" class="px-4 py-2 rounded-lg bg-[#00c282] text-white font-bold text-xs hover:bg-[#00a36d]">Done</button>
+      <div class="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end">
+        <button onclick="closeAutomationsModal()" class="px-5 py-2 rounded-xl bg-brand-500 text-white font-extrabold text-xs shadow-glow-sm hover:bg-brand-600 transition">Save Rules</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: DEVICE SETTINGS -->
-  <div id="modal-device-settings" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#111827] rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-          <i data-lucide="settings" class="w-5 h-5 text-[#00c282]"></i>
-          <span>Device & Model Settings</span>
-        </h3>
+  <div id="modal-device-settings" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-obsidian-900 rounded-3xl max-w-md w-full p-6 space-y-5 border border-slate-200 dark:border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3.5">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Device Hardware Profile</h3>
+        </div>
         <button onclick="closeDeviceSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="space-y-3.5 text-xs">
+      <div class="space-y-3.5 text-xs font-sans">
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Device Name</label>
-          <input type="text" id="edit-dev-name" value="Iot farming system 001" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Device Name</label>
+          <input type="text" id="edit-dev-name" value="Iot farming system 001" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white focus:border-brand-500 focus:outline-none font-bold">
         </div>
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Hardware Model</label>
-          <select id="edit-dev-model" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Microcontroller Model</label>
+          <select id="edit-dev-model" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono focus:border-brand-500 focus:outline-none">
             <option value="ESP32 DevKit V1" selected>ESP32 DevKit V1 (Wi-Fi + BLE)</option>
             <option value="ESP8266 NodeMCU">ESP8266 NodeMCU</option>
             <option value="Raspberry Pi Pico W">Raspberry Pi Pico W</option>
-            <option value="Arduino Uno + ESP01">Arduino Uno / Mega</option>
+            <option value="Arduino Uno R4 WiFi">Arduino Uno R4 WiFi</option>
             <option value="STM32 Nucleo">STM32 Nucleo</option>
           </select>
         </div>
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Location / Tag</label>
-          <input type="text" id="edit-dev-location" value="Farm Villa" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-sans focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Location / Zone Tag</label>
+          <input type="text" id="edit-dev-location" value="Farm Villa" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white focus:border-brand-500 focus:outline-none">
         </div>
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Device ID (MQTT Topic ID)</label>
-          <input type="text" id="edit-dev-id" value="device1" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#00c282]">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">MQTT Device ID (Unique Stream Channel)</label>
+          <input type="text" id="edit-dev-id" value="device1" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-obsidian-800 text-slate-900 dark:text-white font-mono text-brand-500 font-bold focus:border-brand-500 focus:outline-none">
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-end space-x-2">
-        <button onclick="closeDeviceSettingsModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs">Cancel</button>
-        <button onclick="saveDeviceSettings()" class="px-4 py-2 rounded-lg bg-[#00c282] text-white font-bold text-xs hover:bg-[#00a36d]">Save Changes</button>
+      <div class="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end space-x-2">
+        <button onclick="closeDeviceSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-obsidian-800 text-slate-600 dark:text-slate-300 font-bold text-xs">Cancel</button>
+        <button onclick="saveDeviceSettings()" class="px-5 py-2 rounded-xl bg-brand-500 text-white font-extrabold text-xs shadow-glow-sm hover:bg-brand-600 transition">Save Profile</button>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPT -->
+  <!-- JAVASCRIPT ENGINE -->
   <script>
     const appState = {
       deviceName: localStorage.getItem('clynk_dev_name') || 'Iot farming system 001',
@@ -630,11 +716,11 @@
         { pin: 'V6', name: 'Soil Moisture', type: 'Double', unit: '%', min: 0, max: 100, decimals: 0, color: '#00c282', widgetType: 'gauge-chart' },
         { pin: 'V3', name: 'Water Pump', type: 'Boolean', unit: 'state', min: 0, max: 1, decimals: 0, color: '#00c282', widgetType: 'actuator' },
         { pin: 'V2', name: 'Alarm Siren', type: 'Boolean', unit: 'state', min: 0, max: 1, decimals: 0, color: '#ef4444', widgetType: 'actuator' },
-        { pin: 'V4', name: 'ESP32 Voltage', type: 'Double', unit: 'V', min: 0, max: 5, decimals: 2, color: '#10b981', widgetType: 'metric' },
-        { pin: 'V7', name: 'Solar Light Lux', type: 'Integer', unit: 'lux', min: 0, max: 1000, decimals: 0, color: '#f59e0b', widgetType: 'metric' }
+        { pin: 'V4', name: 'ESP32 Rail Voltage', type: 'Double', unit: 'V', min: 0, max: 5, decimals: 2, color: '#10b981', widgetType: 'metric' },
+        { pin: 'V7', name: 'Solar Lux', type: 'Integer', unit: 'lux', min: 0, max: 1000, decimals: 0, color: '#f59e0b', widgetType: 'metric' }
       ])),
       pins: {
-        V0: 28.3, V1: 89.0, V2: 0, V3: 1, V4: 3.82, V5: 0, V6: 46.0, V7: 340
+        V0: 28.3, V1: 89.0, V2: 0, V3: 1, V4: 3.84, V5: 0, V6: 46.0, V7: 340
       }
     };
 
@@ -647,10 +733,11 @@
       updateFirmwareCodeBlock();
       startMQTTStream();
 
+      // Telemetry frequency ticker
       setInterval(function() {
         var rate = appState.packetCount;
         appState.packetCount = 0;
-        var el = document.getElementById('packet-rate-hz');
+        var el = document.getElementById('ticker-rate');
         if (el) el.innerText = rate.toFixed(1);
       }, 1000);
     });
@@ -661,7 +748,7 @@
       document.getElementById('device-model').innerText = appState.deviceModel;
       document.getElementById('info-model').innerText = appState.deviceModel;
       document.getElementById('device-location').innerText = appState.deviceLocation;
-      document.getElementById('info-devid').innerText = appState.deviceId;
+      document.getElementById('header-devid').innerText = appState.deviceId;
     }
 
     function switchTab(tabId) {
@@ -674,13 +761,12 @@
       lucide.createIcons();
     }
 
-    // --- Dynamic Widget Grid Builder (100% Customizable Ports!) ---
+    // --- High-End Dynamic Widget Grid Generator ---
     function renderAllWidgets() {
       var grid = document.getElementById('dynamic-widget-grid');
       if (!grid) return;
       grid.innerHTML = '';
 
-      // Destroy old charts before rebuilding
       for (var k in charts) {
         if (charts[k]) charts[k].destroy();
         delete charts[k];
@@ -691,42 +777,50 @@
         var displayVal = (typeof currentVal === 'number') ? currentVal.toFixed(ds.decimals) : currentVal;
 
         if (ds.widgetType === 'gauge-chart') {
-          // Paired Gauge & Chart Card
+          // Paired Gauge & Chart
           var percent = Math.min(1, Math.max(0, (Number(currentVal) - ds.min) / (ds.max - ds.min || 1)));
           var offset = 188.5 - (percent * 188.5);
 
           var gaugeCol = document.createElement('div');
-          gaugeCol.className = 'xl:col-span-4 blynk-card p-5 flex flex-col justify-between';
+          gaugeCol.className = 'xl:col-span-4 glass-panel p-6 flex flex-col justify-between relative overflow-hidden group';
           gaugeCol.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">${ds.name} (${ds.pin})</span>
-              <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">${ds.type.toUpperCase()}</span>
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}; box-shadow: 0 0 10px ${ds.color};"></span>
+                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 font-mono">${ds.name}</span>
+              </div>
+              <span class="text-[10px] font-mono text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded-md font-extrabold border border-brand-500/20">${ds.pin}</span>
             </div>
-            <div class="relative flex items-center justify-center my-3">
-              <svg class="w-40 h-40" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="0" class="dark:stroke-slate-800" stroke-linecap="round" transform="rotate(135 50 50)"/>
-                <circle id="gauge-arc-${ds.pin.toLowerCase()}" cx="50" cy="50" r="40" fill="none" stroke="${ds.color}" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc"/>
+
+            <div class="relative flex items-center justify-center my-4">
+              <svg class="w-44 h-44 drop-shadow-md" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="7.5" stroke-dasharray="188.5" stroke-dashoffset="0" class="text-slate-200 dark:text-slate-800/80" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle id="gauge-arc-${ds.pin.toLowerCase()}" cx="50" cy="50" r="40" fill="none" stroke="${ds.color}" stroke-width="7.5" stroke-dasharray="188.5" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-arc" style="filter: drop-shadow(0 0 6px ${ds.color}80);"/>
               </svg>
-              <div class="absolute text-center">
-                <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">${displayVal}</span>
-                <span class="text-sm font-semibold text-slate-400">${ds.unit}</span>
+              <div class="absolute text-center flex flex-col items-center">
+                <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-4xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">${displayVal}</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">${ds.unit}</span>
               </div>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-2">
-              <span>${ds.min} ${ds.unit}</span>
-              <span>Max ${ds.max} ${ds.unit}</span>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono border-t border-slate-100 dark:border-white/5 pt-3">
+              <span>Min: ${ds.min} ${ds.unit}</span>
+              <span class="text-emerald-500 font-bold">• REAL-TIME</span>
+              <span>Max: ${ds.max} ${ds.unit}</span>
             </div>
           `;
 
           var chartCol = document.createElement('div');
-          chartCol.className = 'xl:col-span-8 blynk-card p-5 flex flex-col justify-between';
+          chartCol.className = 'xl:col-span-8 glass-panel p-6 flex flex-col justify-between';
           chartCol.innerHTML = `
-            <div class="flex items-center justify-between pb-2">
-              <div class="flex items-center space-x-2">
-                <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}"></span>
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">${ds.name} Chart</span>
+            <div class="flex items-center justify-between pb-3">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color};"></div>
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">${ds.name} Telemetry Stream</h3>
               </div>
-              <span class="text-xs text-slate-400 font-mono">PIN ${ds.pin} • [${ds.min}..${ds.max} ${ds.unit}]</span>
+              <div class="flex items-center space-x-2">
+                <span class="text-[11px] text-slate-400 font-mono">${ds.type} • [${ds.min}..${ds.max} ${ds.unit}]</span>
+              </div>
             </div>
             <div class="relative h-44 w-full">
               <canvas id="chart-${ds.pin.toLowerCase()}"></canvas>
@@ -737,23 +831,23 @@
           grid.appendChild(chartCol);
 
         } else if (ds.widgetType === 'actuator') {
-          // Actuator / Relay Switch Card
+          // Actuator Switch Card
           var active = Number(currentVal) > 0;
           var actCard = document.createElement('div');
-          actCard.className = 'xl:col-span-6 blynk-card p-5 flex items-center justify-between';
+          actCard.className = 'xl:col-span-6 glass-panel p-6 flex items-center justify-between relative overflow-hidden';
           actCard.innerHTML = `
             <div class="flex items-center space-x-4">
-              <div id="act-box-${ds.pin.toLowerCase()}" class="w-14 h-14 rounded-2xl ${active ? 'bg-emerald-500/10 text-[#00c282] border border-emerald-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10'} flex items-center justify-center">
-                <i data-lucide="power" class="w-7 h-7"></i>
+              <div id="act-box-${ds.pin.toLowerCase()}" class="w-14 h-14 rounded-2xl ${active ? 'bg-brand-500/10 text-brand-500 border border-brand-500/30 shadow-glow-sm' : 'bg-slate-100 dark:bg-obsidian-800 text-slate-400 border border-slate-200 dark:border-white/5'} flex items-center justify-center transition-all duration-300">
+                <i data-lucide="power" class="w-7 h-7 ${active ? 'animate-pulse' : ''}"></i>
               </div>
               <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">ACTUATOR • PIN ${ds.pin}</span>
-                <h3 class="text-base font-extrabold text-slate-800 dark:text-white">${ds.name}</h3>
-                <p id="act-lbl-${ds.pin.toLowerCase()}" class="text-xs font-semibold ${active ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">STATUS: ${active ? 'ON (1)' : 'OFF (0)'}</p>
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono">PORT PIN ${ds.pin}</span>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">${ds.name}</h3>
+                <p id="act-lbl-${ds.pin.toLowerCase()}" class="text-xs font-extrabold ${active ? 'text-brand-500' : 'text-slate-400'} mt-0.5 font-mono">STATUS: ${active ? 'RUNNING (1)' : 'STANDBY (0)'}</p>
               </div>
             </div>
-            <button onclick="toggleActuator('${ds.pin}')" id="act-btn-${ds.pin.toLowerCase()}" class="px-5 py-2.5 rounded-xl ${active ? 'bg-[#00c282] hover:bg-[#00a36d] text-white' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'} text-xs font-bold shadow-md transition">
-              ${active ? 'SWITCH OFF' : 'SWITCH ON'}
+            <button onclick="toggleActuator('${ds.pin}')" id="act-btn-${ds.pin.toLowerCase()}" class="px-6 py-2.5 rounded-xl ${active ? 'bg-brand-500 hover:bg-brand-600 text-white shadow-glow-sm' : 'bg-slate-100 hover:bg-slate-200 dark:bg-obsidian-800 dark:hover:bg-obsidian-700 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'} text-xs font-extrabold tracking-wide transition-all duration-200">
+              ${active ? 'SWITCH OFF' : 'ACTIVATE'}
             </button>
           `;
           grid.appendChild(actCard);
@@ -761,19 +855,19 @@
         } else {
           // Digital Metric Card
           var metricCard = document.createElement('div');
-          metricCard.className = 'xl:col-span-4 blynk-card p-5 flex flex-col justify-between';
+          metricCard.className = 'xl:col-span-4 glass-panel p-6 flex flex-col justify-between';
           metricCard.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">${ds.name} (${ds.pin})</span>
-              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}"></span>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">${ds.name}</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-slate-100 dark:bg-obsidian-800 text-brand-500">${ds.pin}</span>
             </div>
-            <div class="my-3 flex items-baseline space-x-1.5">
-              <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">${displayVal}</span>
-              <span class="text-sm font-semibold text-slate-400">${ds.unit}</span>
+            <div class="my-3 flex items-baseline space-x-2">
+              <span id="gauge-val-${ds.pin.toLowerCase()}" class="text-4xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">${displayVal}</span>
+              <span class="text-sm font-bold text-slate-400">${ds.unit}</span>
             </div>
-            <div class="text-[11px] text-slate-400 font-mono flex justify-between border-t border-slate-100 dark:border-white/5 pt-2">
+            <div class="text-[11px] text-slate-400 font-mono flex justify-between border-t border-slate-100 dark:border-white/5 pt-3">
               <span>Type: ${ds.type}</span>
-              <span>Range: ${ds.min} - ${ds.max}</span>
+              <span>Bound: ${ds.min} - ${ds.max}</span>
             </div>
           `;
           grid.appendChild(metricCard);
@@ -787,7 +881,7 @@
     function initDynamicCharts() {
       var isDark = document.documentElement.classList.contains('dark');
       var gridColor = isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9';
-      var textColor = isDark ? '#94a3b8' : '#64748b';
+      var textColor = isDark ? '#64748b' : '#94a3b8';
 
       appState.datastreams.filter(d => d.widgetType === 'gauge-chart').forEach(function(ds) {
         var canvas = document.getElementById('chart-' + ds.pin.toLowerCase());
@@ -802,10 +896,10 @@
               label: ds.name,
               data: [cur, cur, cur, cur],
               borderColor: ds.color,
-              backgroundColor: ds.color + '15',
-              borderWidth: 2,
+              backgroundColor: ds.color + '18',
+              borderWidth: 2.5,
               pointRadius: 0,
-              tension: 0.25,
+              tension: 0.3,
               fill: true
             }]
           },
@@ -815,7 +909,16 @@
             animation: false,
             plugins: {
               legend: { display: false },
-              tooltip: { mode: 'index', intersect: false }
+              tooltip: {
+                backgroundColor: isDark ? '#0f1422' : '#ffffff',
+                titleColor: isDark ? '#ffffff' : '#0f172a',
+                bodyColor: isDark ? '#94a3b8' : '#475569',
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
+                borderWidth: 1,
+                padding: 10,
+                displayColors: false,
+                bodyFont: { family: 'JetBrains Mono', size: 11 }
+              }
             },
             scales: {
               x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } } },
@@ -848,15 +951,15 @@
         var box = document.getElementById('act-box-' + pin.toLowerCase());
         var lbl = document.getElementById('act-lbl-' + pin.toLowerCase());
         var btn = document.getElementById('act-btn-' + pin.toLowerCase());
-        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00c282] border border-emerald-500/30 flex items-center justify-center' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-white/10 flex items-center justify-center';
-        if (lbl) { lbl.innerText = 'STATUS: ' + (active ? 'ON (1)' : 'OFF (0)'); lbl.className = 'text-xs font-semibold mt-0.5 ' + (active ? 'text-emerald-600' : 'text-slate-400'); }
-        if (btn) { btn.innerText = active ? 'SWITCH OFF' : 'SWITCH ON'; btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition ' + (active ? 'bg-[#00c282] hover:bg-[#00a36d] text-white' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'); }
+        if (box) box.className = active ? 'w-14 h-14 rounded-2xl bg-brand-500/10 text-brand-500 border border-brand-500/30 shadow-glow-sm flex items-center justify-center transition-all duration-300' : 'w-14 h-14 rounded-2xl bg-slate-100 dark:bg-obsidian-800 text-slate-400 border border-slate-200 dark:border-white/5 flex items-center justify-center transition-all duration-300';
+        if (lbl) { lbl.innerText = 'STATUS: ' + (active ? 'RUNNING (1)' : 'STANDBY (0)'); lbl.className = 'text-xs font-extrabold mt-0.5 font-mono ' + (active ? 'text-brand-500' : 'text-slate-400'); }
+        if (btn) { btn.innerText = active ? 'SWITCH OFF' : 'ACTIVATE'; btn.className = 'px-6 py-2.5 rounded-xl text-xs font-extrabold tracking-wide transition-all duration-200 ' + (active ? 'bg-brand-500 hover:bg-brand-600 text-white shadow-glow-sm' : 'bg-slate-100 hover:bg-slate-200 dark:bg-obsidian-800 dark:hover:bg-obsidian-700 text-slate-800 dark:text-white border border-slate-300 dark:border-white/10'); }
       }
 
       var ch = charts[pin];
       if (ch) {
         var now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        if (ch.data.labels.length > 25) {
+        if (ch.data.labels.length > 20) {
           ch.data.labels.shift();
           ch.data.datasets[0].data.shift();
         }
@@ -869,15 +972,15 @@
       if (tableVal) tableVal.innerText = formatted;
     }
 
-    // --- Stream Mode Engine ---
+    // --- Stream Protocols ---
     function setStreamMode(mode) {
       appState.streamMode = mode;
       ['mqtt', 'serial', 'http', 'sim'].forEach(function(m) {
         var btn = document.getElementById('mode-btn-' + m);
         if (btn) {
           btn.className = (m === mode) 
-            ? 'px-2.5 py-1 rounded-md bg-[#00c282] text-white shadow-sm transition font-bold flex items-center space-x-1'
-            : 'px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition flex items-center space-x-1';
+            ? 'px-3 py-1 rounded-lg bg-brand-500 text-white shadow-glow-sm transition font-bold flex items-center space-x-1'
+            : 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition flex items-center space-x-1';
         }
       });
 
@@ -892,7 +995,7 @@
 
     async function startSerialStream() {
       if (!('serial' in navigator)) {
-        alert('Web Serial is supported in Chrome/Edge. Connect via USB on Chrome/Edge.');
+        alert('Web Serial is supported on Google Chrome & Microsoft Edge! Please open on a supported browser.');
         setStreamMode('mqtt');
         return;
       }
@@ -900,8 +1003,8 @@
         var port = await navigator.serial.requestPort();
         await port.open({ baudRate: 115200 });
         appState.serialPort = port;
-        document.getElementById('status-text').innerText = 'CONNECTED (USB 115200)';
-        showToast('USB Serial Connected', 'Streaming live telemetry from COM Port at 115200 baud', 'emerald');
+        document.getElementById('status-text').innerText = 'CONNECTED (USB)';
+        showToast('USB Serial Linked', 'Streaming directly via UART at 115200 baud', 'emerald');
         
         var decoder = new TextDecoderStream();
         port.readable.pipeTo(decoder.writable);
@@ -932,14 +1035,14 @@
           }
         }
       } catch (err) {
-        document.getElementById('status-text').innerText = 'SERIAL DISCONNECTED';
+        document.getElementById('status-text').innerText = 'DISCONNECTED';
       }
     }
 
     function startMQTTStream() {
       if (appState.mqttClient) appState.mqttClient.end(true);
       try {
-        var client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: 'clynk_console_' + Math.random().toString(16).slice(2, 8) });
+        var client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: 'clynk_pro_' + Math.random().toString(16).slice(2, 8) });
         appState.mqttClient = client;
 
         client.on('connect', function() {
@@ -1003,12 +1106,12 @@
       }, 1000);
     }
 
-    // --- Automations Engine ---
+    // --- Smart Automations Engine ---
     function checkAutomations(pin, val) {
-      var pumpAutoEnabled = document.getElementById('auto-pump-enable') ? document.getElementById('auto-pump-enable').checked : true;
+      var pumpAuto = document.getElementById('auto-pump-enable') ? document.getElementById('auto-pump-enable').checked : true;
       var pumpThresh = document.getElementById('auto-pump-thresh') ? parseFloat(document.getElementById('auto-pump-thresh').value) : 35;
 
-      if (pin === 'V6' && pumpAutoEnabled) {
+      if (pin === 'V6' && pumpAuto) {
         if (val < pumpThresh && appState.pins.V3 === 0) {
           appState.pins.V3 = 1;
           updateWidgetUI('V3', 1);
@@ -1019,20 +1122,20 @@
           appState.pins.V3 = 0;
           updateWidgetUI('V3', 0);
           publishActuatorCommand('V3', 0);
-          logActionEvent(`💧 [AUTO-IRRIGATION] Soil saturated (${val}%). Water Pump (V3) turned OFF.`, 'slate');
+          logActionEvent(`💧 [AUTO-IRRIGATION] Soil Saturated (${val}%). Water Pump (V3) turned OFF.`, 'slate');
         }
       }
 
-      var alarmAutoEnabled = document.getElementById('auto-alarm-enable') ? document.getElementById('auto-alarm-enable').checked : true;
+      var alarmAuto = document.getElementById('auto-alarm-enable') ? document.getElementById('auto-alarm-enable').checked : true;
       var tempThresh = document.getElementById('auto-temp-thresh') ? parseFloat(document.getElementById('auto-temp-thresh').value) : 35;
 
-      if (pin === 'V0' && alarmAutoEnabled) {
+      if (pin === 'V0' && alarmAuto) {
         if (val > tempThresh && appState.pins.V2 === 0) {
           appState.pins.V2 = 1;
           updateWidgetUI('V2', 1);
           publishActuatorCommand('V2', 1);
           logActionEvent(`🚨 [HEAT-ALERT] High Temperature (${val}°C > ${tempThresh}°C). Siren Alarm (V2) triggered!`, 'red');
-          showToast('High Temperature Alert', `Temperature is ${val}°C! Siren Alarm triggered.`, 'red');
+          showToast('High Temperature Alert', `Temperature is ${val}°C! Siren Alarm active.`, 'red');
         }
       }
     }
@@ -1060,7 +1163,7 @@
       fetch('/api/blynk/update?pin=' + pin + '&value=' + state).catch(function() {});
     }
 
-    // --- DATASTREAM MODAL HANDLERS (Custom Port Engine) ---
+    // --- Datastream Modal Handlers ---
     function openNewDatastreamModal() {
       document.getElementById('ds-modal-title').innerText = 'Add Custom Virtual Datastream';
       document.getElementById('ds-edit-orig-pin').value = '';
@@ -1071,7 +1174,6 @@
       document.getElementById('ds-decimals-select').value = '1';
       document.getElementById('ds-delete-btn').classList.add('hidden');
       
-      // Auto-select first unused pin
       var usedPins = appState.datastreams.map(d => d.pin);
       for (var i = 0; i < 16; i++) {
         var p = 'V' + i;
@@ -1136,17 +1238,14 @@
       };
 
       if (origPin) {
-        // Edit existing
         var idx = appState.datastreams.findIndex(d => d.pin === origPin);
         if (idx !== -1) appState.datastreams[idx] = newDsObj;
       } else {
-        // Add new (replace if same pin exists)
         var existingIdx = appState.datastreams.findIndex(d => d.pin === newPin);
         if (existingIdx !== -1) appState.datastreams[existingIdx] = newDsObj;
         else appState.datastreams.push(newDsObj);
       }
 
-      // If pin wasn't in state, initialize it
       if (appState.pins[newPin] === undefined) {
         appState.pins[newPin] = min;
       }
@@ -1156,20 +1255,20 @@
       renderAllWidgets();
       renderDatastreamsTable();
       updateFirmwareCodeBlock();
-      showToast('Datastream Saved', `Port ${newPin} (${name}) configured successfully!`, 'emerald');
+      showToast('Datastream Synchronized', `Port ${newPin} (${name}) saved!`, 'emerald');
     }
 
     function deleteDatastream() {
       var origPin = document.getElementById('ds-edit-orig-pin').value;
       if (!origPin) return;
-      if (confirm('Are you sure you want to remove datastream ' + origPin + '?')) {
+      if (confirm('Delete datastream ' + origPin + '?')) {
         appState.datastreams = appState.datastreams.filter(d => d.pin !== origPin);
         localStorage.setItem('clynk_datastreams', JSON.stringify(appState.datastreams));
         closeDatastreamModal();
         renderAllWidgets();
         renderDatastreamsTable();
         updateFirmwareCodeBlock();
-        showToast('Datastream Removed', `Port ${origPin} has been deleted.`, 'slate');
+        showToast('Datastream Removed', `Port ${origPin} deleted.`, 'slate');
       }
     }
 
@@ -1183,55 +1282,55 @@
         var formatted = (typeof cur === 'number') ? cur.toFixed(ds.decimals) : cur;
 
         var tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition cursor-pointer';
+        tr.className = 'hover:bg-slate-50 dark:hover:bg-obsidian-800/40 transition cursor-pointer';
         tr.onclick = function(e) {
           if (e.target.tagName !== 'BUTTON') openEditDatastreamModal(ds.pin);
         };
         tr.innerHTML = `
-          <td class="p-3.5 pl-5 font-bold text-[#00c282]">${ds.pin}</td>
-          <td class="p-3.5 font-sans font-semibold text-slate-800 dark:text-slate-200">
-            <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style="background-color: ${ds.color}"></span>
-            ${ds.name}
+          <td class="p-4 pl-6 font-bold text-brand-500 font-mono">${ds.pin}</td>
+          <td class="p-4 font-sans font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${ds.color}"></span>
+            <span>${ds.name}</span>
           </td>
-          <td class="p-3.5 text-slate-500">${ds.type}</td>
-          <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold">${ds.unit || '-'}</span></td>
-          <td class="p-3.5 text-slate-500">${ds.min} - ${ds.max}</td>
-          <td class="p-3.5 text-slate-500">${ds.decimals}</td>
-          <td class="p-3.5 font-bold text-slate-900 dark:text-white" id="table-val-${ds.pin}">${formatted}</td>
-          <td class="p-3.5 text-right pr-5">
-            <button onclick="openEditDatastreamModal('${ds.pin}')" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 text-slate-600 hover:text-[#00c282] font-semibold text-xs transition">Edit</button>
+          <td class="p-4 text-slate-500 dark:text-slate-400 font-sans">${ds.type}</td>
+          <td class="p-4"><span class="px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-obsidian-800 font-bold font-mono">${ds.unit || '-'}</span></td>
+          <td class="p-4 text-slate-500 dark:text-slate-400 font-mono">${ds.min} - ${ds.max}</td>
+          <td class="p-4 text-slate-500 dark:text-slate-400 font-mono">${ds.decimals}</td>
+          <td class="p-4 font-extrabold text-slate-900 dark:text-white font-mono text-sm" id="table-val-${ds.pin}">${formatted}</td>
+          <td class="p-4 text-right pr-6">
+            <button onclick="openEditDatastreamModal('${ds.pin}')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-obsidian-800 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-500 font-bold text-xs transition">Edit</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // --- Helpers & Settings ---
+    // --- Helpers ---
     function logActionEvent(msg, color) {
       var list = document.getElementById('action-log-list');
       if (!list) return;
       var item = document.createElement('div');
       var now = new Date().toLocaleTimeString();
-      item.className = 'py-2 flex items-center justify-between text-slate-700 dark:text-slate-300';
-      item.innerHTML = `<span>[${now}] ${msg}</span><span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold">${color.toUpperCase()}</span>`;
+      item.className = 'py-2.5 flex items-center justify-between text-slate-700 dark:text-slate-300';
+      item.innerHTML = `<span>[${now}] ${msg}</span><span class="text-[10px] bg-slate-100 dark:bg-obsidian-800 px-2 py-0.5 rounded-md font-bold text-brand-500">${color.toUpperCase()}</span>`;
       list.prepend(item);
     }
 
     function clearActionLogs() {
       var list = document.getElementById('action-log-list');
-      if (list) list.innerHTML = '<div class="py-2 text-slate-500">Logs cleared.</div>';
+      if (list) list.innerHTML = '<div class="py-3 text-slate-500">Logs cleared.</div>';
     }
 
     function showToast(title, body, color) {
       var container = document.getElementById('toast-container');
       if (!container) return;
       var toast = document.createElement('div');
-      toast.className = 'toast-animate px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xl flex items-start space-x-3 pointer-events-auto max-w-sm';
+      toast.className = 'toast-slide px-4 py-3.5 rounded-2xl bg-white dark:bg-obsidian-850 border border-slate-200 dark:border-white/10 shadow-2xl flex items-start space-x-3 pointer-events-auto max-w-sm';
       toast.innerHTML = `
-        <div class="w-7 h-7 rounded-lg bg-${color}-500/10 text-${color}-500 flex items-center justify-center font-bold">✓</div>
+        <div class="w-8 h-8 rounded-xl bg-brand-500/15 text-brand-500 flex items-center justify-center font-bold text-sm shadow-glow-sm">✓</div>
         <div class="flex-1">
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white">${title}</h4>
-          <p class="text-[11px] text-slate-500 mt-0.5">${body}</p>
+          <h4 class="text-xs font-extrabold text-slate-900 dark:text-white">${title}</h4>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">${body}</p>
         </div>
       `;
       container.appendChild(toast);
@@ -1268,7 +1367,7 @@
       updateFirmwareCodeBlock();
       closeDeviceSettingsModal();
       setStreamMode(appState.streamMode);
-      showToast('Settings Saved', 'Device profile & model updated successfully', 'emerald');
+      showToast('Hardware Profile Updated', 'Device & model synchronized successfully', 'emerald');
     }
 
     function setFirmwareType(type) {
@@ -1276,8 +1375,8 @@
       var btnStd = document.getElementById('fw-btn-standard');
       var btnWm = document.getElementById('fw-btn-wifimanager');
       if (btnStd && btnWm) {
-        btnStd.className = (type === 'standard') ? 'px-2.5 py-1 rounded-md bg-[#00c282] text-white' : 'px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300';
-        btnWm.className = (type === 'wifimanager') ? 'px-2.5 py-1 rounded-md bg-[#00c282] text-white' : 'px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300';
+        btnStd.className = (type === 'standard') ? 'px-3 py-1.5 rounded-lg bg-brand-500 text-white shadow-glow-sm' : 'px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-white';
+        btnWm.className = (type === 'wifimanager') ? 'px-3 py-1.5 rounded-lg bg-brand-500 text-white shadow-glow-sm' : 'px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-white';
       }
       updateFirmwareCodeBlock();
     }
@@ -1294,7 +1393,7 @@
 
       var code = '';
       if (appState.firmwareType === 'wifimanager') {
-        code = '#include <WiFiManager.h> // Install WiFiManager by tzapu via Library Manager\n#include <PubSubClient.h>\n\n' +
+        code = '#include <WiFiManager.h> // Library: WiFiManager by tzapu\n#include <PubSubClient.h>\n\n' +
           'const char* mqtt_server = "broker.emqx.io";\n' +
           'const int   mqtt_port   = 1883;\n' +
           'const char* device_id   = "' + appState.deviceId + '";\n\n' +
@@ -1302,10 +1401,10 @@
           'void setup() {\n' +
           '  Serial.begin(115200);\n' +
           '  pinMode(2, OUTPUT);\n\n' +
-          '  // Auto Captive Portal on "Clynk-Setup-AP"\n' +
+          '  // Captive Portal Hotspot: Connect phone to "Clynk-Setup-AP"\n' +
           '  WiFiManager wm;\n' +
           '  if (!wm.autoConnect("Clynk-Setup-AP")) {\n' +
-          '    Serial.println("Restarting ESP32...");\n' +
+          '    Serial.println("Rebooting ESP32...");\n' +
           '    ESP.restart();\n' +
           '  }\n' +
           '  Serial.println("✅ Wi-Fi connected!");\n' +
@@ -1315,7 +1414,7 @@
           'void callback(char* topic, byte* payload, unsigned int length) {\n' +
           '  String msg = "";\n' +
           '  for (int i = 0; i < length; i++) msg += (char)payload[i];\n' +
-          '  if (String(topic).endsWith("/V3")) digitalWrite(2, msg.toInt() ? HIGH : LOW);\n' +
+          '  if (String(topic).endsWith("/V3")) digitalWrite(2, msg.toInt() ? HIGH : LOW); // Water Pump\n' +
           '}\n\n' +
           'void reconnect() {\n' +
           '  while (!client.connected()) {\n' +
@@ -1324,9 +1423,9 @@
           '    else delay(2000);\n' +
           '  }\n' +
           '}\n\n' +
-          'float readSensor_V0() { return 28.0 + (random(0, 30)/10.0); }\n' +
-          'float readSensor_V1() { return 88.0 + (random(0, 40)/10.0); }\n' +
-          'float readSensor_V6() { return 45.0 + (random(0, 30)/10.0); }\n\n' +
+          'float readSensor_V0() { return 28.3 + (random(-10, 10)/10.0); }\n' +
+          'float readSensor_V1() { return 89.0 + (random(-15, 15)/10.0); }\n' +
+          'float readSensor_V6() { return 46.0 + (random(-10, 10)/10.0); }\n\n' +
           'void loop() {\n' +
           '  if (!client.connected()) reconnect();\n' +
           '  client.loop();\n' +
@@ -1366,9 +1465,9 @@
           '    else delay(2000);\n' +
           '  }\n' +
           '}\n\n' +
-          'float readSensor_V0() { return 28.0 + (random(0, 30)/10.0); }\n' +
-          'float readSensor_V1() { return 88.0 + (random(0, 40)/10.0); }\n' +
-          'float readSensor_V6() { return 45.0 + (random(0, 30)/10.0); }\n\n' +
+          'float readSensor_V0() { return 28.3 + (random(-10, 10)/10.0); }\n' +
+          'float readSensor_V1() { return 89.0 + (random(-15, 15)/10.0); }\n' +
+          'float readSensor_V6() { return 46.0 + (random(-10, 10)/10.0); }\n\n' +
           'void loop() {\n' +
           '  if (!client.connected()) reconnect();\n' +
           '  client.loop();\n' +
@@ -1393,14 +1492,6 @@
       });
     }
 
-    function addTagPrompt() {
-      var tag = prompt('Enter tag name (e.g. Sector-4, GreenHouse):');
-      if (tag) {
-        appState.deviceLocation += ' • ' + tag;
-        document.getElementById('device-location').innerText = appState.deviceLocation;
-      }
-    }
-
     function saveCurrentTemplate() {
       var template = {
         name: appState.deviceName,
@@ -1409,18 +1500,23 @@
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('clynk_template_saved', JSON.stringify(template));
-      showToast('Template Saved', 'Layout, model, and datastreams stored to memory!', 'emerald');
+      showToast('Layout Stored', 'Custom dashboard ports persisted to memory', 'emerald');
     }
 
     function setTimeFilter(filter) {
       appState.timeFilter = filter;
-      document.querySelectorAll('.time-btn').forEach(function(b) { b.classList.remove('active'); });
-      var activeBtn = document.getElementById('tbtn-' + filter);
-      if (activeBtn) activeBtn.classList.add('active');
+      document.querySelectorAll('#view-dashboard button').forEach(function(b) {
+        if (b.id && b.id.startsWith('tbtn-')) {
+          b.className = (b.id === 'tbtn-' + filter) 
+            ? 'px-3.5 py-1.5 rounded-lg bg-brand-500 text-white font-bold shadow-glow-sm transition'
+            : 'px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-obsidian-800 transition';
+        }
+      });
     }
 
     function toggleDarkMode() {
       document.documentElement.classList.toggle('dark');
+      initDynamicCharts();
     }
 
     function exportCSVData() {
